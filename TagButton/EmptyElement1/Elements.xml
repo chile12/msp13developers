@@ -1,0 +1,5 @@
+﻿<Elements xmlns="http://schemas.microsoft.com/sharepoint/">
+  <Control Id="GlobalSiteLink3" Sequence="100"
+		ControlSrc ="~/_controltemplates/TagButton/TagButton.ascx">
+  </Control>
+</Elements>

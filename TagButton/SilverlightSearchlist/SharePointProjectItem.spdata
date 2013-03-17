@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ProjectItem Type="Microsoft.VisualStudio.SharePoint.Module" DefaultFile="Elements.xml" SupportedTrustLevels="All" SupportedDeploymentScopes="Web, Site" xmlns="http://schemas.microsoft.com/VisualStudio/2010/SharePointTools/SharePointProjectItemModel">
+  <Files>
+    <ProjectItemFile Source="Elements.xml" Target="SilverlightSearchlist\" Type="ElementManifest" />
+    <ProjectOutputFile ProjectId="66929281-4832-4fc1-90ec-5ea8c7aa2569" ProjectPath="..\SilverlightGrid\SilverlightGrid.csproj" Target="SilverlightSearchlist\" Type="ElementFile" />
+  </Files>
+</ProjectItem>
