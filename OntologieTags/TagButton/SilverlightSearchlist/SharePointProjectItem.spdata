@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ProjectItem Type="Microsoft.VisualStudio.SharePoint.Module" DefaultFile="Elements.xml" SupportedTrustLevels="All" SupportedDeploymentScopes="Web, Site" xmlns="http://schemas.microsoft.com/VisualStudio/2010/SharePointTools/SharePointProjectItemModel">
+  <Files>
+    <ProjectItemFile Source="Elements.xml" Target="SilverlightSearchlist\" Type="ElementManifest" />
+    <ProjectOutputFile ProjectId="81084fc7-6982-474a-9924-0c2e501e2687" ProjectPath="..\TabNavApp\TabNavApp.csproj" Target="SilverlightSearchlist\" Type="ElementFile" />
+  </Files>
+</ProjectItem>

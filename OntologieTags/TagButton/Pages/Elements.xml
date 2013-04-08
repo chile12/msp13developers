@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Elements xmlns="http://schemas.microsoft.com/sharepoint/">
+  <Module Name="Pages" Url="SitePages">
+
+
+
+<File Path="Pages\Silverlight.js" Url="Pages/Silverlight.js" />
+<File Path="Pages\TabNavAppTestPage.html" Url="Pages/TabNavAppTestPage.html" />
+<File Path="Pages\TabNavAppTestPage.aspx" Url="Pages/TabNavAppTestPage.aspx" />
+</Module>
+</Elements>

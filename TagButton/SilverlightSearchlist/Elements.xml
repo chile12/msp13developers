@@ -1,8 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Elements xmlns="http://schemas.microsoft.com/sharepoint/">
-  <Module Name="SilverlightSearchlist" Url="_catalogs/masterpage">
-    <File Path="SilverlightSearchlist\SilverlightGrid.xap"
-          Url="SilverlightGrid.xap"
-          Type="GhostableInLibrary" />
-  </Module>
-</Elements>
