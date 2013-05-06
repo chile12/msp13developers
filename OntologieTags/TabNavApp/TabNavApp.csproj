@@ -63,10 +63,19 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DocGraphSilverlight">
+      <HintPath>..\DocGraphSilverlight.dll</HintPath>
+    </Reference>
     <Reference Include="dotNetRDF">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio 10.0\dotNetRDF\Core\sl4\dotNetRDF.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp, Version=5.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
+    <Reference Include="Microsoft.SharePoint.Client.Silverlight">
+      <HintPath>..\..\..\..\..\..\..\Program Files\Common Files\Microsoft Shared\Web Server Extensions\14\TEMPLATE\LAYOUTS\ClientBin\Microsoft.SharePoint.Client.Silverlight.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SharePoint.Client.Silverlight.Runtime">
+      <HintPath>..\..\..\..\..\..\..\Program Files\Common Files\Microsoft Shared\Web Server Extensions\14\TEMPLATE\LAYOUTS\ClientBin\Microsoft.SharePoint.Client.Silverlight.Runtime.dll</HintPath>
+    </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="SilverlightCompLib">
       <HintPath>..\..\zzz\BagOTricks\BagOTricksGraph\Bin\Debug\SilverlightCompLib.dll</HintPath>
@@ -94,17 +103,30 @@
     <Reference Include="System.Windows.Data, Version=5.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Windows.Browser" />
-    <Reference Include="VirtuosoSkosSilverlight">
-      <HintPath>..\..\VirtuosoSkos\VirtuosoSkosSilverlight\Bin\Debug\VirtuosoSkosSilverlight.dll</HintPath>
-    </Reference>
+    <Reference Include="VirtuosoSkosSilverlight, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Api\DocSearchLBItem.xaml.cs">
+      <DependentUpon>DocSearchLBItem.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Api\Document.cs" />
+    <Compile Include="Api\Tag.cs" />
+    <Compile Include="Api\TagSearchLBItem.xaml.cs">
+      <DependentUpon>TagSearchLBItem.xaml</DependentUpon>
+    </Compile>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Constants.cs" />
+    <Compile Include="Api\DocumentTemplate.xaml.cs">
+      <DependentUpon>DocumentTemplate.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SpPropertiesGetter.cs" />
     <Compile Include="Views\ErrorWindow.xaml.cs">
       <DependentUpon>ErrorWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\MainView.xaml.cs">
+      <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\SearchGraph.xaml.cs">
       <DependentUpon>SearchGraph.xaml</DependentUpon>
@@ -126,9 +148,25 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Resource>
+    <Page Include="Api\DocSearchLBItem.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Api\DocumentTemplate.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Api\TagSearchLBItem.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Views\ErrorWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\MainView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\SearchGraph.xaml">
       <SubType>Designer</SubType>
@@ -145,10 +183,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram1.cd" />
+    <None Include="key.snk" />
     <None Include="Properties\AppManifest.xml" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\InBrowserSettings.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\graph.png" />
+    <Resource Include="Icons\Tag.png" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

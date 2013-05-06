@@ -9,6 +9,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
+using System.Threading;
+using Microsoft.SharePoint.Client;
 
 namespace TabNavApp
 {
@@ -24,7 +26,25 @@ namespace TabNavApp
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            this.RootVisual = new MainPage();
+            ApplicationContext.Init(e.InitParams, SynchronizationContext.Current);
+            //Get GUID array from input params
+            string[] guids = null;
+            if (e.InitParams.ContainsKey("docs"))
+            {
+                string guid_string = e.InitParams["docs"];
+                if (guid_string != null)
+                {
+                    guids = guid_string.Split(new String[] { "_" }, StringSplitOptions.RemoveEmptyEntries);
+                    if(guids != null && guids.Length > 0)
+                        if(guids[0].Equals("null"))
+                            guids = null;
+                }
+            }
+
+            string url = e.InitParams["MS.SP.Url"];
+            string listId = e.InitParams["listId"];
+            //initialize the app with GUID array or null, in case there are no GUIDS available
+            this.RootVisual = new MainPage(guids, url, listId);
         }
 
         private void Application_UnhandledException(object sender, ApplicationUnhandledExceptionEventArgs e)

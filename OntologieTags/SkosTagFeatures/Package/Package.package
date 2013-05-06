@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns:dm0="http://schemas.microsoft.com/VisualStudio/2008/DslTools/Core" dslVersion="1.0.0.0" Id="22cd1745-317a-43ce-a3d8-6f4b69f7238a" solutionId="22cd1745-317a-43ce-a3d8-6f4b69f7238a" resetWebServer="false" name="TagButton" xmlns="http://schemas.microsoft.com/VisualStudio/2008/SharePointTools/PackageModel">
+  <features>
+    <featureReference itemId="ead8ae1f-0f6a-4913-847b-8f12b8a16a46" />
+    <featureReference itemId="eb8d1a56-f215-4b79-b99e-248fe693b0a3" />
+  </features>
+  <projectItems>
+    <projectItemReference itemId="655c34b7-07c3-4bdb-9889-d96936644545" />
+    <projectItemReference itemId="1e227746-db27-4335-83fa-6a58223f1238" />
+  </projectItems>
+</package>

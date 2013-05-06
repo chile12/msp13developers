@@ -1,6 +1,0 @@
-﻿<!--points to resource of the button skin / Id="GlobalSiteLink3" is the address of the placeholder for the delegate control in the Masterpage-->
-<Elements xmlns="http://schemas.microsoft.com/sharepoint/">
-  <Control Id="GlobalSiteLink3" Sequence="100"
-		ControlSrc ="~/_controltemplates/TagButton/TagButton.ascx">
-  </Control>
-</Elements>

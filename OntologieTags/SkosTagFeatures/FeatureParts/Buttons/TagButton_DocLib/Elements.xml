@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Elements xmlns="http://schemas.microsoft.com/sharepoint/">
+  <CustomAction
+    Id="Ribbon.Documents.Tagging"
+    Location="CommandUI.Ribbon">
+    <CommandUIExtension>
+      <CommandUIDefinitions>
+        <CommandUIDefinition
+          Location="Ribbon.Documents.Groups._children">
+          <Group
+            Id="Ribbon.Documents.Tagging"
+            Sequence="80"
+            Description="Tagging Group"
+            Title="Tagging"
+            Command="EnableTagging"
+            Template="Ribbon.Templates.Flexible2">
+            <Controls Id="Ribbon.Documents.Tagging.Controls">
+              <Button
+                Id="Ribbon.Documents.Tagging.AddTag"
+                Command="AddTagCommand"
+                Image16by16="/_layouts/images/NoteBoard_16x16.png"
+                Image32by32="/_layouts/images/NoteBoard_32x32.png"
+                LabelText="Tag Document"
+                TemplateAlias="o1"
+                Sequence="15" />
+            </Controls>
+          </Group>
+        </CommandUIDefinition>
+        <CommandUIDefinition
+          Location="Ribbon.Documents.Scaling._children">
+          <MaxSize
+            Id="Ribbon.Documents.Scaling.Tagging.MaxSize"
+            Sequence="15"
+            GroupId="Ribbon.Documents.Tagging"
+            Size="LargeLarge" />
+        </CommandUIDefinition>
+      </CommandUIDefinitions>
+      <CommandUIHandlers>
+        <CommandUIHandler
+          Command="EnableTagging"
+          CommandAction="javascript:return true;" />
+        <CommandUIHandler
+          Command="AddTagCommand"
+          CommandAction="javascript:TabNavApp_GetDocsPopUp();"/>
+      </CommandUIHandlers>
+    </CommandUIExtension>
+  </CustomAction>
+  <CustomAction  Location="ScriptLink"
+	    ScriptSrc="~/_layouts/SkosTagFeatures/js/Global.js" Sequence="100">
+  </CustomAction>
+</Elements>

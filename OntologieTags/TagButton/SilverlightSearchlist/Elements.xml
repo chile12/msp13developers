@@ -1,6 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Elements xmlns="http://schemas.microsoft.com/sharepoint/">
-  <Module Name="TabNavApp" Url="_catalogs/masterpage">
-  <File Path="SilverlightSearchlist\TabNavApp.xap" Url="SilverlightSearchlist/TabNavApp.xap" />
-</Module>
-</Elements>
