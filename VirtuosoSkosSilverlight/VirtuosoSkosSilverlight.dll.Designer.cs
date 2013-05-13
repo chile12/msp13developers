@@ -8,7 +8,8 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace VirtuosoSkosSilverlight {
+namespace VirtuosoQuery.Silverlight.Skos
+{
     using System;
     
     

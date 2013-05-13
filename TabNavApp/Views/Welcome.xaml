@@ -1,0 +1,35 @@
+﻿<navigation:Page x:Class="TabNavApp.Welcome" 
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:navigation="clr-namespace:System.Windows.Controls;assembly=System.Windows.Controls.Navigation"
+    mc:Ignorable="d" d:DesignWidth="640" d:DesignHeight="480"
+    Title="Home"
+    Style="{StaticResource PageStyle}">
+
+    <Grid x:Name="LayoutRoot">
+        <ScrollViewer x:Name="PageScrollViewer" Style="{StaticResource PageScrollViewerStyle}">
+
+            <StackPanel x:Name="ContentStackPanel" >
+
+                <TextBlock x:Name="HeaderText" Style="{StaticResource HeaderTextStyle}" 
+                                   Text="Home"/>
+                <TextBlock x:Name="ContentText" Style="{StaticResource ContentTextStyle}" 
+                                   Text="Dies ist ein Provisorium... den eigentlichen Inhalt des Vorprojekts finden Sie im nächten Tab!"/>
+                <TextBlock Name="textBlock1" Style="{StaticResource ContentTextStyle}" Text="ändern Sie hier falls nötig die folgenden Uris:" />
+                <TextBlock Name="textBlock7" Style="{StaticResource ContentTextStyle}" Text="Document-Graph Uri: (Standard: http://sharepoint.my/SPResourceTags)" />
+                <TextBox Height="26" HorizontalContentAlignment="Right" IsEnabled="True" IsReadOnly="False" Name="docGraphUriTB" VerticalContentAlignment="Top" Width="228" />
+                <TextBlock Name="textBlock2" Style="{StaticResource ContentTextStyle}" Text="" />
+                <TextBlock Name="textBlock3" Style="{StaticResource ContentTextStyle}" Text="" />
+                <TextBlock Name="textBlock4" Style="{StaticResource ContentTextStyle}" Text="" />
+                <TextBlock Name="textBlock5" Style="{StaticResource ContentTextStyle}" Text="Skos-Graph Uri: (Standard: http://localhost:8890/UNESCO)" />
+                <TextBox Height="26" Name="skosGraphUriTB" Width="228" HorizontalContentAlignment="Right" IsEnabled="True" VerticalContentAlignment="Top" IsReadOnly="False" />
+                <TextBlock Name="textBlock6" Style="{StaticResource ContentTextStyle}" Text="SPARQL Endpunkt Uri: (http://localhost:8890/sparql)" />
+                <TextBox Height="23" HorizontalContentAlignment="Left" IsEnabled="True" Name="sparqlEndpointUriTB" Width="230" />
+                <Button Content="ändern!" Height="23" Name="okBT" Width="75" Click="okBT_Click" />
+            </StackPanel>
+
+        </ScrollViewer>
+    </Grid>
+
+</navigation:Page>

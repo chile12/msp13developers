@@ -14,7 +14,7 @@ using VDS.RDF.Query;
 using System.Collections.Generic;
 using VDS.RDF;
 
-namespace VirtuosoSkosSilverlight
+namespace VirtuosoQuery.Silverlight.Skos
 {
     public enum OrderDirection
     {
@@ -175,7 +175,7 @@ namespace VirtuosoSkosSilverlight
         /// <returns>returns topK results ordered by their weight (relevance) 
         /// List<string[]>: the resultlist (columns: uri, name, hit-predicate, weight)
         /// List<string>: columnheadlist: for constructing a DataTable with columnheads</returns>
-        void searchTag(VirtuosoSkosSilverlight.VirtuosoSkosQuery.SearchResultCallback callback, string searchString, int topKResults);
+        void searchTag(VirtuosoQuery.Silverlight.Skos.VirtuosoSkosQuery.SearchResultCallback callback, string searchString, int topKResults);
         /// <summary>
         /// returns all collections a given concept is a member of (transitively!)
         /// </summary>

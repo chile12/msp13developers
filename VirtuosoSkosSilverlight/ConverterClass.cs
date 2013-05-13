@@ -17,7 +17,7 @@ using System.Dynamic;
 using VDS.RDF.Query;
 using VDS.RDF;
 
-namespace VirtuosoSkosSilverlight
+namespace VirtuosoQuery
 {
     public static class ConverterClass
     {
@@ -61,6 +61,73 @@ namespace VirtuosoSkosSilverlight
                 } 
             }
             return table;
+        }
+
+        public static List<ReturnDocument> convertSparqlResultToListReturnDocument(SparqlResultSet set)
+        {
+            List<ReturnDocument> retList = new List<ReturnDocument>();
+            if (set != null)
+            {
+                try
+                {
+                    if (set.Results[0] != null)
+                    {
+                        foreach (SparqlResult res in set.Results)
+                        {
+                            ReturnDocument ret = new ReturnDocument();
+                            string listType = (res["spListType"] as UriNode).Uri.AbsoluteUri;
+
+                            if((res["author"] as LiteralNode) != null)
+                                ret.Author = (res["author"] as LiteralNode).Value;
+                            ret.CreationDate = (res["created"] as LiteralNode).Value;
+                            if((res["spListID"] as LiteralNode) != null)
+                                ret.ListID = (res["spListID"] as LiteralNode).Value;
+                            ret.Name = (res["title"] as LiteralNode).Value;
+                            ret.UniqueID = (res["guid"] as LiteralNode).Value;
+                            ret.ListType = (Entry)Enum.Parse(typeof(Entry), listType.Substring(listType.LastIndexOf('/')+1), true);
+                            if((res["server"] as LiteralNode) != null)
+                                ret.server = (res["server"] as LiteralNode).Value;
+
+                            retList.Add(ret);
+                        }
+                    }
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                }
+            }
+            return retList;
+        }
+
+        public static List<ReturnTag> convertSparqlResultToListReturnTag(SparqlResultSet set)
+        {
+            List<ReturnTag> retList = new List<ReturnTag>();
+            if (set != null)
+            {
+                try
+                {
+                    if (set.Results[0] != null)
+                    {
+                        foreach (SparqlResult res in set.Results)
+                        {
+                            ReturnTag ret = new ReturnTag();
+
+                            if ((res["altLabels"] as LiteralNode) != null)
+                                ret.altLabels = (res["altLabels"] as LiteralNode).Value;
+                            if ((res["description"] as LiteralNode) != null)
+                                ret.description = (res["description"] as LiteralNode).Value;
+                            ret.prefLabel = (res["tagLabel"] as LiteralNode).Value;
+                            ret.uri = (res["skosUri"] as UriNode).Uri.AbsoluteUri;
+
+                            retList.Add(ret);
+                        }
+                    }
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                }
+            }
+            return retList;
         }
 
         public static List<ReturnRow> convertListStringArrayToDataTable(Tuple<string[], List<object[]>> input)

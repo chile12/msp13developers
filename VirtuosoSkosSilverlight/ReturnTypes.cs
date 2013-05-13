@@ -12,8 +12,10 @@ using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Collections;
 
-namespace VirtuosoSkosSilverlight
+namespace VirtuosoQuery
 {
+    public enum Entry { Generic, Document, Discussion, Survey, Issue, Page }
+
     /// <summary>
     /// a dynamic member-collection for up to 10 different row-entries e.g. for a DataGrid in Silverlight
     /// </summary>
@@ -51,6 +53,23 @@ namespace VirtuosoSkosSilverlight
         public override string ToString()
         {
             return uri + "\n" + prefLabel + "\n" + altLabels + "\n" + description;
+        }
+    }
+
+    public class ReturnDocument
+    {
+        public string Name { get; set; }
+        public string Author { get; set; }
+        public string CreationDate { get; set; }
+        public string UniqueID { get; set; }
+        public string ListID { get; set; }
+        public Entry ListType { get; set; }
+        public string server { get; set; }
+        public List<string> Tags { get; set; }
+
+        public string CreationDate_Author
+        {
+            get { return CreationDate + ", " + Author; }
         }
     }
 

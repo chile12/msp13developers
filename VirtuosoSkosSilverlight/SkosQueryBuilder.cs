@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-namespace VirtuosoSkosSilverlight
+namespace VirtuosoQuery.Silverlight.Skos
 {
     public enum QueryBlocks{
         SELECT, FROM, WHERE

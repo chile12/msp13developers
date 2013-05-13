@@ -18,7 +18,8 @@ using System.Text.RegularExpressions;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-namespace VirtuosoSkosSilverlight
+
+namespace VirtuosoQuery.Silverlight.Skos
 {
     /// <summary>
     /// 
@@ -35,7 +36,8 @@ namespace VirtuosoSkosSilverlight
 
         private string xsd = VirtuosoSkosSilverlight_dll.xmlSchema;                             //some standard schemata
         private string skos = VirtuosoSkosSilverlight_dll.skosCore;
-        private Uri skosGraph;                                                                  //Graphuri des Ontologiegraphen (http://{Triplestore-IP}:{Port}/{Graphname})
+        private string tagGraph = null;
+        private string docGraph = null;
 
         private const string prefixSTR = "prefix";                                              //query-components
         private string languageTag;
@@ -50,9 +52,11 @@ namespace VirtuosoSkosSilverlight
         /// constructor for a skos-query
         /// </summary>
         /// <param name="endpoint">needs an sparql-endpont to query on</param>
-        public VirtuosoSkosQuery(SparqlRemoteEndpoint endpoint)
+        public VirtuosoSkosQuery(SparqlRemoteEndpoint endpoint, string skosGraphUri, string docGraphUri)
         {
             this.endpoint = endpoint;
+            this.docGraph = docGraphUri;
+            this.tagGraph = skosGraphUri;
 
             //construct prefix-list from the config-file
             //foreach (System.Collections.DictionaryEntry obj in VirtuosoSkosSilverlight_dll.ResourceManager.GetResourceSet(CultureInfo.CurrentCulture, true, false))
@@ -63,12 +67,11 @@ namespace VirtuosoSkosSilverlight
             //    }
             //}
 
-            this.skosGraph = new Uri("http://localhost:8890/UNESCO");//UriFactory.Create(endpoint.DefaultGraphs[0]);      //get skos-graph uri from endpoint-default-graph
             this.languageTag = "en";//VirtuosoSkosSilverlight_dll.skosLanguage;        //get the given language from config-file
 
             queryPrefix = "PREFIX skos: <" + skos + "> ";                       //set simple query components
             querySelect = "SELECT DISTINCT ?uri (str(?name) AS ?conceptname) ";
-            queryFrom = "FROM <" + skosGraph.AbsoluteUri + "> ";
+            queryFrom = "FROM <" + tagGraph + "> ";
             queryLanguageFilter = "FILTER langMatches( lang(?name), \"" + languageTag + "\" )";
         }
 
@@ -253,11 +256,11 @@ namespace VirtuosoSkosSilverlight
         }
         public void topGraphConcepts(SparqlResultsCallback callback, OrderDirection order)
         {
-            topGraphConcepts(callback, skosGraph.AbsoluteUri, order, null);
+            topGraphConcepts(callback, tagGraph, order, null);
         }
         public void topGraphConcepts(SparqlResultsCallback callback)
         {
-            topGraphConcepts(callback, skosGraph.AbsoluteUri, OrderDirection.NONE, null);
+            topGraphConcepts(callback, tagGraph, OrderDirection.NONE, null);
         }
         /// <summary>
         /// searches for all words (-stopwords) of a searchstring in all LiteralNodes linked with skos:predicates 
@@ -386,8 +389,8 @@ namespace VirtuosoSkosSilverlight
                     resultList[i][relevance] = (object)relevanceList[i];
                     SparqlResultsCallback additionalSearchResultInfoCallback = new SparqlResultsCallback(callForAdditinalInfo);
                     string additionalInfoQuery = "SELECT (sql:group_concat(?altLabel , \", \") AS ?altLabels) (STR(?description) as ?description) " +
-                        "FROM <" + skosGraph.AbsoluteUri + "> " +
-                        "WHERE {OPTIONAL{?uri skos:altLabel ?altLabel} OPTIONAL{?uri skos:scopeNote ?description } " +
+                        "FROM <" + tagGraph + "> " +
+                        "WHERE {OPTIONAL{?uri skos:altLabel ?altLabel. ?uri skos:scopeNote ?description. } " +
                         "FILTER (?uri = <" + resultList[i][uri].ToString() + ">) FILTER (langMatches(lang(?altLabel), \"" + languageTag + "\")) " +
                         "FILTER (langMatches(lang(?description), \"" + languageTag + "\"))} GROUP BY ?uri ?description";
 
@@ -486,7 +489,6 @@ namespace VirtuosoSkosSilverlight
             stopGap = null;
             stopGap = result;       //class-object gets result
             stopWaitHandle.Set();   //signal thread of the search-algorithm to continue
-stopWaitHandle.Set();   //signal thread of the search-algorithm to continue
         }
         /// <summary>
         /// Callbackfunction for additional search result informations (altLabels + description)
@@ -514,6 +516,15 @@ stopWaitHandle.Set();   //signal thread of the search-algorithm to continue
             querySelect = "SELECT DISTINCT (MAX(?uri)) ";
             queryWhere = "WHERE { ?uri a skos:Concept. } ";
             endpoint.QueryWithResultSet(queryPrefix + querySelect + queryFrom + queryWhere , callback, state);
+        }
+
+        public void getReturnTag(string conceptUri, SparqlResultsCallback callback, object state)
+        {
+            querySelect = "SELECT ?uri (str(?name) as ?name)  (sql:group_concat(?altLabel , \", \") AS ?altLabels) (STR(?description) as ?description) ";
+            queryWhere = "WHERE {OPTIONAL{?uri skos:altLabel ?altLabel FILTER (langMatches(lang(?altLabel), \"" + languageTag + "\")) ?uri skos:scopeNote ?description FILTER (langMatches(lang(?description), \"" + languageTag + "\"))} " +
+                "?uri skos:prefLabel ?name. FILTER (?uri = <" + conceptUri + ">) " +
+                       queryLanguageFilter + "} GROUP BY ?uri ?description ?name";
+            endpoint.QueryWithResultSet(queryPrefix + querySelect + queryFrom + queryWhere, callback, state);
         }
     }
 }
