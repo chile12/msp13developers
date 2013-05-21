@@ -13,9 +13,9 @@ namespace TabNavApp
 {
     public static class Constants
     {
-        public static string endpointAddress {get; set;}   // = "http://localhost:8890/sparql";
-        public static string skosGraphUri { get; set; }        // = "http://localhost:8890/UNESCO";"http://localhost:8890/UNESCO";
-        public static string docGraphUri { get; set; }//"http://sharepoint.my/SPResourceTags"; 
+        //public static string endpointAddress {get; set;}        
+        //public static string skosGraphUri { get; set; }         
+        //public static string docGraphUri { get; set; }          
         public static Brush brush_stickied {get; set;}
         public static Brush brush_default {get; set;}
         
@@ -24,9 +24,10 @@ namespace TabNavApp
             brush_default = new SolidColorBrush(Color.FromArgb(255, 255, 255, 255));
             brush_stickied = new SolidColorBrush(Color.FromArgb(255, 219, 244, 204));
 
-            endpointAddress = "http://localhost:8890/sparql";
-            skosGraphUri = "http://localhost:8890/UNESCO";
-            docGraphUri = "http://sharepoint.my/SPResourceTags";
+
+            //endpointAddress = "http://localhost:8890/sparql";
+            //skosGraphUri = "http://localhost:8890/UNESCO";
+            //docGraphUri = "http://sharepoint.my/SPResourceTags";
         }
     }
 }

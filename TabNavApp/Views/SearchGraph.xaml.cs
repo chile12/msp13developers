@@ -37,15 +37,16 @@ namespace TabNavApp
         private List<string>[] callbackInputGraph = new List<string>[4];                //reduced concept list for better graph visuals
         private List<string>[] callbackInputFull = new List<string>[4];                 //complete list of related concepts
         private Dictionary<string, string> uriDict = new Dictionary<string, string>();  //dict for all nodes concept-name - uri
+        private Dictionary<string, string> topConcepts = new Dictionary<string, string>();  //topConcepts - uris
         private string newCenter = null;                                                //concept name of the center-node
 
         private SparqlResultsCallback gridMemberOfCallback;                             //delegate for the memberOf-list 
         private SparqlResultsCallback graphCallback;                                    //delegate for all graph-related callbacks
         private SparqlResultsCallback propertiesCallback;                               //delegate for the propertiesOf-callback (all informations at the top of the page)
+        private SparqlResultsCallback topConceptCallback; 
         private DataGrid callbackGrid = null;                                           //non-visual placeholder for the searchResult-DataGrid
 
-        VirtuosoSkosQuery query = null;                                                 //our query object
-        VDS.RDF.Query.SparqlRemoteEndpoint endpoint = null;                             //the endpoint object
+        VirtuosoSkosQuery query = null;                                                 //our query objec
 
         private bool CTR_preessed = false;                                              //indicated whether the CTR-button is pressed
         private bool startUpGraphShown = true;                                          //indicetes whether the current graph is the startup-graph (legend)
@@ -63,19 +64,30 @@ namespace TabNavApp
         {
             InitializeComponent();
 
-            //endpoint and query object are initiated
-            endpoint = new VDS.RDF.Query.SparqlRemoteEndpoint(UriFactory.Create(Constants.endpointAddress), Constants.skosGraphUri);
-            query = new VirtuosoSkosQuery(endpoint, Constants.skosGraphUri, Constants.docGraphUri);
+            query = new VirtuosoSkosQuery();
 
             gridMemberOfCallback = new SparqlResultsCallback(memberOfCallbackFkt);          //delegates are initiated
             graphCallback = new SparqlResultsCallback(graphCallbackFkt);
             propertiesCallback = new SparqlResultsCallback(propertiesCallbackFkt);
+            topConceptCallback = new SparqlResultsCallback(topConceptCallbackFkt);
 
             this.Loaded += new RoutedEventHandler(Page_Loaded);                             //events are activated
             this.SizeChanged += new SizeChangedEventHandler(SearchGraph_SizeChanged);
+            this.graphBox.SizeChanged += new SizeChangedEventHandler(graphBox_SizeChanged);
             //this.MouseLeftButtonDown += new MouseButtonEventHandler(SearchGraph_MouseLeftButtonDown);
 
+            query.topGraphConcepts(topConceptCallback);
+
+            this.Arrange(new Rect(new Point(0, 0), this.RenderSize));
+            this.UpdateLayout();
             this.memberOfDG.Focus();
+            
+        }
+
+        void graphBox_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (graphControl != null)
+                graphControl.ChangeSize(e.NewSize);
         }
         /// <summary>
         /// will automatically change the outline of a graph if the parent-container-size changes
@@ -84,33 +96,9 @@ namespace TabNavApp
         /// <param name="e">special Eventargs for this event (includes old size, new size and parent-container-object)</param>
         void SearchGraph_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if(graphControl != null)
+            if (graphControl != null)
                 graphControl.ChangeSize(e.NewSize);
         }
-        /// <summary>
-        /// placeholder, not in use jet
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        //void SearchGraph_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        //{
-        //    if (e.ClickCount == 2)
-        //    {
-        //        if (e.OriginalSource is TextBlock)
-        //        {
-        //            if (!(e.OriginalSource as TextBlock).Text.Contains("members of "))    //not!
-        //            {
-        //                string uri = "";
-        //                uriDict.TryGetValue((e.OriginalSource as TextBlock).Text, out uri);        //get uri corresponding to the name of the clicked graph from uri-Dictionary
-        //                SparqlResultsCallback getReturnTagCallback = new SparqlResultsCallback(getReturnTagCallbackFkt);
-        //                if (uri != null)
-        //                    query.getReturnTag(uri, getReturnTagCallback, null);
-        //            }
-        //        }
-        //    }
-        //    this.memberOfDG.Focus();
-        //}
-
         
         /// <summary>
         /// receives result-call from triple-store and generates columns, bindings and headers
@@ -124,7 +112,7 @@ namespace TabNavApp
             //thread-crossing!
             Deployment.Current.Dispatcher.BeginInvoke(() =>
             {
-                zw = ConverterClass.convertSparqlResultToListReturnRow(set);        //convert SPARQLResultSet zu a List<ReturnRow> object
+                zw = StaticHelper.convertSparqlResultToListReturnRow(set);        //convert SPARQLResultSet zu a List<ReturnRow> object
                 callbackGrid = (state as DataGrid);                                 //state object carries the DataGrid which receives a new DataSource
                 callbackGrid.AutoGenerateColumns = false;
                 generateGridColumns(ref callbackGrid, zw);                          //initialize columns of the grid
@@ -145,7 +133,7 @@ namespace TabNavApp
             Deployment.Current.Dispatcher.BeginInvoke(() =>
             {
                 this.altLabelTB.Text = "alternative names: ";
-                zw = ConverterClass.convertSparqlResultToListReturnRow(set);        //convert SPARQLResultSet zu a List<ReturnRow> object
+                zw = StaticHelper.convertSparqlResultToListReturnRow(set);        //convert SPARQLResultSet zu a List<ReturnRow> object
 
                 foreach (ReturnRow row in zw)
                 {
@@ -174,22 +162,22 @@ namespace TabNavApp
             Deployment.Current.Dispatcher.BeginInvoke(() =>
             {
                 //generate a ReturnRow-list
-                zw = ConverterClass.convertSparqlResultToListReturnRow(set);
+                zw = StaticHelper.convertSparqlResultToListReturnRow(set);
                 list = new List<string>();
 
-                 if (zw != null)                                                //fill uriDict
+                 if (zw != null)                                                    //fill uriDict
                  {
                      for (int i = 1; i < zw.Count; i++)
                      {
-                         list.Add(zw[i].val_1);                                 //val_0 = uri, val_1=conceptname(by default)
+                         list.Add(zw[i].val_1);                                     //val_0 = uri, val_1=conceptname(by default)
                          string key = zw[i].val_1.ToString();
 
-                         if (zw[i].val_0.GetType() == typeof(Uri))              //if typeof(Uri)
+                         if (zw[i].val_0.GetType() == typeof(Uri))                  //if typeof(Uri)
                          {
                              if (!uriDict.Keys.Contains(key))
                                  uriDict.Add(zw[i].val_1, (zw[i].val_0 as Uri).AbsoluteUri);        //adds new uri to dict
                          }
-                         else if (zw[i].val_0.GetType() == typeof(string))      //if typeof(string)
+                         else if (zw[i].val_0.GetType() == typeof(string))          //if typeof(string)
                          {
                              if (!uriDict.Keys.Contains(key))
                                  uriDict.Add(zw[i].val_1, zw[i].val_0);             //adds new uri to dict
@@ -197,8 +185,8 @@ namespace TabNavApp
                      }
                  }
 
-                 callbackInputFull[(int)state] = list;      //callbackInputFull gets every result-node
-                 if (list.Count > 7)                        //if there are more than 7 nodes in one direction-list
+                 callbackInputFull[(int)state] = list;                                      //callbackInputFull gets every result-node
+                 if (list.Count > 7)                                                        //if there are more than 7 nodes in one direction-list
                  {
                      callbackInputGraph[(int)state] = list.Take(6).ToList();                //take first 6 and add an additional node to the (shown) graph-node-list
                      callbackInputGraph[(int)state].Add(STR_More);                          //create an additional custom node (MORE...)
@@ -283,18 +271,18 @@ namespace TabNavApp
         /// <param name="e">not needed</param>
         public void NavigateToGraphConcept(string conceptUri, string conceptName)
         {
-                uriDict.Clear();
-                newCenter = conceptName;                //name new center-node
-                callbackInputFull[0] = callbackInputFull[1] = callbackInputFull[2] = callbackInputFull[3] = null;  //reset the graph-input-node-lists
-                callbackInputGraph[0] = callbackInputGraph[1] = callbackInputGraph[2] = callbackInputGraph[3] = null;
+            uriDict.Clear();
+            newCenter = conceptName;                //name new center-node
+            callbackInputFull[0] = callbackInputFull[1] = callbackInputFull[2] = callbackInputFull[3] = null;  //reset the graph-input-node-lists
+            callbackInputGraph[0] = callbackInputGraph[1] = callbackInputGraph[2] = callbackInputGraph[3] = null;
 
-                //call on the triple store to update data, answers will be received through the callback-functions
-                query.memberOf(gridMemberOfCallback, conceptUri, OrderDirection.ASC, memberOfDG);  //first: fill memberOf-DataGrid
-                query.broader(graphCallback, conceptUri, OrderDirection.NONE, 0);                  //now: fill node-lists with  broader, narrower, related ans sibling concepts of the center-node-concept
-                query.narrower(graphCallback, conceptUri, OrderDirection.NONE, 1);
-                query.siblings(graphCallback, conceptUri, OrderDirection.NONE, 2);
-                query.relatedTo(graphCallback, conceptUri, OrderDirection.NONE, 3);
-                query.propertiesOf(propertiesCallback, conceptUri, OrderDirection.NONE, null);     //get addition properties to fill discription and alternative tags
+            //call on the triple store to update data, answers will be received through the callback-functions
+            query.memberOf(gridMemberOfCallback, conceptUri, OrderDirection.ASC, memberOfDG);  //first: fill memberOf-DataGrid
+            query.broader(graphCallback, conceptUri, OrderDirection.NONE, 0);                  //now: fill node-lists with  broader, narrower, related ans sibling concepts of the center-node-concept
+            query.narrower(graphCallback, conceptUri, OrderDirection.NONE, 1);
+            query.siblings(graphCallback, conceptUri, OrderDirection.NONE, 2);
+            query.relatedTo(graphCallback, conceptUri, OrderDirection.NONE, 3);
+            query.propertiesOf(propertiesCallback, conceptUri, OrderDirection.NONE, null);     //get addition properties to fill discription and alternative tags
         } 
 
 
@@ -420,8 +408,12 @@ namespace TabNavApp
             }
             this.memberOfDG.Focus();
         }
-
-        private void getReturnTagCallbackFkt(SparqlResultSet set, object state)
+        /// <summary>
+        /// callback methode for the getReturnTagCallback delegate, adds a tag to the tag-list in the MainView 
+        /// </summary>
+        /// <param name="set">the query result set</param>
+        /// <param name="iii">not used</param>
+        private void getReturnTagCallbackFkt(SparqlResultSet set, object iii)
         {
             string altL ="";
             string desc ="";
@@ -430,10 +422,19 @@ namespace TabNavApp
             if(set.Results[0]["description"] != null)
                    desc = (set.Results[0]["description"] as LiteralNode).Value;
 
+            //create new list state with normal list and sticked list
+            Api.Tags.Tag[] items = new Api.Tags.Tag[0];
+            Api.Tags.Tag[] stickies = new Api.Tags.Tag[0];
             if (TabNavApp.Api.Common.ListController<TabNavApp.Api.Tags.Tag>.lastSearchStack.Count == 0)
-                TabNavApp.Api.Common.ListController<TabNavApp.Api.Tags.Tag>.lastSearchStack.Push(new Api.Common.ListState<Api.Tags.Tag>(new Api.Tags.Tag[1], new Api.Tags.Tag[1]));
+                TabNavApp.Api.Common.ListController<TabNavApp.Api.Tags.Tag>.lastSearchStack.Push(new Api.Common.ListState<Api.Tags.Tag>(stickies, items));
+            else      //push new state on the stack
+            {
+                items = TabNavApp.Api.Common.ListController<TabNavApp.Api.Tags.Tag>.lastSearchStack.Peek().ItemList;
+                stickies = TabNavApp.Api.Common.ListController<TabNavApp.Api.Tags.Tag>.lastSearchStack.Peek().StickiedList;
+                TabNavApp.Api.Common.ListController<TabNavApp.Api.Tags.Tag>.lastSearchStack.Push(new Api.Common.ListState<Api.Tags.Tag>(stickies, items));
+            }
 
-            TabNavApp.Api.Common.ListController<TabNavApp.Api.Tags.Tag>.lastSearchStack.Peek()
+            TabNavApp.Api.Common.ListController<TabNavApp.Api.Tags.Tag>.lastSearchStack.Peek()  //ad selected concept as tag to the tag lsit
                 .AddStickedItem(new Api.Tags.Tag()
                 {
                     AltLabels = altL,
@@ -441,6 +442,10 @@ namespace TabNavApp
                     Name = (set.Results[0]["name"] as LiteralNode).Value,
                     Uri = (set.Results[0]["uri"] as UriNode).Uri.AbsoluteUri
                 });
+            Deployment.Current.Dispatcher.BeginInvoke(() =>
+            {
+                MessageBox.Show("The tag: " + (set.Results[0]["name"] as LiteralNode).Value + " has been added to your tag list");
+            });
         }
         /// <summary>
         /// sets the CTR-button state
@@ -458,6 +463,34 @@ namespace TabNavApp
         {
             if (e.Key == Key.Ctrl)
                 CTR_preessed = false;
+        }
+        /// <summary>
+        /// event methode: triggered by selecting a top concept from the drop-down-buttom
+        /// </summary>
+        /// <param name="sender">the drop-down-button</param>
+        /// <param name="e">event args</param>
+        private void topConceptCB_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string uri = null;
+            topConcepts.TryGetValue(e.AddedItems[0].ToString(), out uri);   //get the corresponding graph-uri stored in this dictionary
+            if (uri != null)
+                NavigateToGraphConcept(uri, e.AddedItems[0].ToString());    //navigate to the selected concept
+        }
+        /// <summary>
+        /// callback methode for the topConceptCallback delegate, fills the topConceptCB at startup
+        /// </summary>
+        /// <param name="set">the query-result</param>
+        /// <param name="state">not used</param>
+        private void topConceptCallbackFkt(SparqlResultSet set, object state)
+        {
+            //thread crossing
+            Deployment.Current.Dispatcher.BeginInvoke(() =>
+            {
+                foreach(SparqlResult res in set)        //fill the dictionary with name - graph uri tuples
+                    this.topConcepts.Add((res["conceptName"] as LiteralNode).Value, (res["topConcept"] as UriNode).Uri.AbsoluteUri);
+                if(topConcepts.Count >0)
+                    topConceptCB.ItemsSource = topConcepts.Keys;        //make concept-names the dataSource of the drop down buttom
+            });
         }
     }
 }

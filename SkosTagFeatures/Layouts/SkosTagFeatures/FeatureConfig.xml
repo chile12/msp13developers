@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!--All values below are defaults and have to be changed in order to make this feature work properly. (note: Uris should not end with a '/')-->
+<Configurations>
+  <InnerXml>
+    <DocumentGraph SparqlEndpointUrl="http://localhost:8890/sparql" DocumentGraphUri="http://sharepoint.my/SPResourceTags" SkosGraphUri="http://localhost:8890/UNESCO"/>
+    <!--Possible language tags: EN,FR, DE,IT, SP SW NL PT,RU... make shure the language tag actually is used in your graph-->
+    <Language SkosGraphLanguageTag="en" DocGraphLanguageTag="en"/>
+    <GraphSpecifics>
+      <!--Search predicated specify those skos:predicates which are eligible for text-search in your graph. Meaning: those predicates which actually hold text-information about a concept.-->
+      <!--The importance of a match from one of those predicates is decending with the position in the following list.(prefLabel should usually be the first entry here)-->
+      <SearchPredicates>
+        prefLabel, altLabel, scopeNote, hiddenLabel
+      </SearchPredicates>
+      <!--The following word list contains the stop-words of a chosen language. These words will be ignored in a search string. -->
+      <SearchStopWords>
+        i, a, about, an, are, as, at, be, by, com, de, en, for, from, how, in, is, it, la, of, on, or, that, the, this, to, was, what, when, where, who, will, with, and, the, www
+      </SearchStopWords>
+    </GraphSpecifics>
+    <!--The following settings might only be changed if necessary. For more information: http://prefix.cc/ & search for uris below-->
+    <Additional SkosCoreUri="http://www.w3.org/2004/02/skos/core#" CommonTagUri="http://commontag.org/ns#" />
+  </InnerXml>
+</Configurations>

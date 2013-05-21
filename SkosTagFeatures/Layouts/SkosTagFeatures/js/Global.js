@@ -3,16 +3,25 @@ function TabNavApp_PopUp(params) {
     return ExecuteOrDelayUntilScriptLoaded(
     //eine functions-definition innerhalb von ExecuteOrDelayUntilScriptLoaded ist vorgesehen 
     function pop() {
-        var options = SP.UI.$create_DialogOptions();
-        options.width = 1080;
-        options.height = 602;
-        options.title = "Taxonomy & Tagging Control";
-        options.url = "/_Layouts/SkosTagFeatures/MainPage/MainPage.aspx?" + params;
+        var options = {
+            url: "/_Layouts/SkosTagFeatures/MainPage/MainPage.aspx?" + params,
+            title: "Taxonomy & Tagging Control",
+            allowMaximize: true,
+            showClose: true,
+            width: 1080,
+            height: 700,
+            dialogReturnValueCallback: onCloseCallback
+        };
         SP.UI.ModalDialog.showModalDialog(options);
-        
     }
 , "sp.js");
 }
+
+function onCloseCallback(dialogResult, returnValue) {
+    window.location.href = returnValue;
+}
+
+
 
 function getURLandPopup(params)
 {

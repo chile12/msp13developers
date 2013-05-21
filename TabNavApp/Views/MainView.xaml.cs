@@ -24,18 +24,23 @@ using System.Windows.Browser;
 
 namespace TabNavApp.Views
 {
+    /// <summary>
+    /// the tagging-page provides full tagging control
+    /// </summary>
     public partial class MainView : Page
     {
-        public AutoResetEvent stopWaitHandle = new AutoResetEvent(false);  
+        public AutoResetEvent stopWaitHandle = new AutoResetEvent(false);                      // 
         private VirtuosoSkosQuery query = null;                                                 //our query object
-        private VDS.RDF.Query.SparqlRemoteEndpoint endpoint = null;                             //the endpoint object
-        private VirtuosoSkosQuery.SearchResultCallback searchTagCall = null;
-        private SparqlResultsCallback docQueryCallback = null;
-        private SparqlResultsCallback docTagsCallback = null;   
-        private DocGraphQuery docQuery = null;
+        private VirtuosoSkosQuery.SearchResultCallback searchTagCall = null;                    //callback deleagat for tag-search calls
+        private SparqlResultsCallback docQueryCallback = null;                                  //callback delegate for document-searchs
+        private SparqlResultsCallback docTagsCallback = null;                                   //callback delegate for 'all tags of this document'
+        private EntryGraphQuery docQuery = null;                                                //query object for document related queries
 
-        public delegate void EventHandler(object sender, EventArgs args);
+        
+        
+        public delegate void EventHandler(object sender, EventArgs args);                       //
         public event EventHandler TagButton_Clicked = null;
+        public event VirtuosoQuery.StaticHelper.EventHandler configLoaded = null;    //
 
         public ListController<Document> documentController { get; set; }
         public ListController<Tag> tagController { get; set; }
@@ -50,10 +55,19 @@ namespace TabNavApp.Views
             PropertyChangedCallback ItemSourceChangedCallback = new PropertyChangedCallback(ItemSourceChangedCallbackFkt);
             RegisterForNotification("ItemsSource", this.TagListBox, ItemSourceChangedCallback);
             TagButton_Clicked = new EventHandler(tagButtonClick);
+            configLoaded = new VirtuosoQuery.StaticHelper.EventHandler(configLoadedCallbackFkt);
 
             //Initialize list controller
             documentController = new ListController<Document>(DocumentListBox);
             tagController = new ListController<Tag>(TagListBox);
+
+            VirtuosoQuery.StaticHelper.xmlConfigReader(MainPage.ConfigFileUrl, configLoaded); 
+        }
+
+        public void CloseWindowNavigateTo(string navigateToUrl)
+        {
+            ScriptObject so = HtmlPage.Window.GetProperty("closeWindow") as ScriptObject;
+            so.InvokeSelf(new object[] { navigateToUrl });
         }
 
         // Listen for change of the dependency property (in lieu of an event like ListBox.ItemSource_Changed)
@@ -68,14 +82,17 @@ namespace TabNavApp.Views
         // Executes when the user navigates to this page.
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            if (TabNavApp.Api.Common.ListController<TabNavApp.Api.Tags.Tag>.lastSearchStack != null 
-                || TabNavApp.Api.Common.ListController<TabNavApp.Api.Documents.Document>.lastSearchStack != null)
+            ////endpoint, query and callback object are initiated
+            Constants.InitializeDefault();
+
+            if (TabNavApp.Api.Common.ListController<TabNavApp.Api.Tags.Tag>.lastSearchStack.Count > 0 
+                || TabNavApp.Api.Common.ListController<TabNavApp.Api.Documents.Document>.lastSearchStack.Count > 0)
             {
-                if (TabNavApp.Api.Common.ListController<TabNavApp.Api.Documents.Document>.lastSearchStack != null)
+                if (TabNavApp.Api.Common.ListController<TabNavApp.Api.Documents.Document>.lastSearchStack.Count > 0)
                 {
                     lastDocViewBT_Click(new object(), new RoutedEventArgs());
                 }
-                if (TabNavApp.Api.Common.ListController<TabNavApp.Api.Tags.Tag>.lastSearchStack != null)
+                if (TabNavApp.Api.Common.ListController<TabNavApp.Api.Tags.Tag>.lastSearchStack.Count > 0)
                 {
                     lastTagViewBT_Click(new object(), new RoutedEventArgs());
                 }
@@ -87,14 +104,10 @@ namespace TabNavApp.Views
                 documentController.Update(true);
             }
 
-            ////endpoint, query and callback object are initiated
-            Constants.InitializeDefault();
-            endpoint = new VDS.RDF.Query.SparqlRemoteEndpoint(UriFactory.Create(Constants.endpointAddress), Constants.skosGraphUri);
-            docQuery = new DocGraphQuery(endpoint, Constants.skosGraphUri, Constants.docGraphUri);
-            query = new VirtuosoSkosQuery(endpoint, Constants.skosGraphUri, Constants.docGraphUri);
             searchTagCall = new VirtuosoSkosQuery.SearchResultCallback(searchResultCallback);
             docQueryCallback = new SparqlResultsCallback(docQueryCallbackFkt);
             docTagsCallback = new SparqlResultsCallback(getTagsOfDocCallbackFkt);
+            Thread.Sleep(500);
         }
 
 
@@ -109,6 +122,7 @@ namespace TabNavApp.Views
         {
             query.searchTag(searchTagCall, tagSearchTB.Text, 50);
             tagController.Clear();
+           // Deployment.Current.Dispatcher.BeginInvoke(() => { MessageBox.Show("query gesendet"); });
         }
 
         /// <summary>
@@ -118,10 +132,11 @@ namespace TabNavApp.Views
         /// <param name="set">the resultset</param>
         private void searchResultCallback(Tuple<string[], List<object[]>> set)
         {
+           // Deployment.Current.Dispatcher.BeginInvoke(() => { MessageBox.Show("antwort erhalten " + set.Item2.Count.ToString()); });
             //thread-crossing!
             Deployment.Current.Dispatcher.BeginInvoke(() =>
             {
-                List<ReturnTag> zw = ConverterClass.convertListStringArrayToTagList(set);     //convert SPARQLResultSet
+                List<ReturnTag> zw = StaticHelper.convertListStringArrayToTagList(set);     //convert SPARQLResultSet
                 List<Tag> tags = new List<Tag>();
                 foreach(ReturnTag ret in zw)
                    tags.Add(new Api.Tags.Tag(){ Name = ret.prefLabel,  Uri = ret.uri,  AltLabels = ret.altLabels,  Description = ret.description});
@@ -152,7 +167,7 @@ namespace TabNavApp.Views
                 });
             }
             docQuery.insertEntries(zw);
-            MessageBox.Show("All sticked documents were tagged with " + ((sender as TabNavApp.Api.Tags.TagListItem).DataContext as Tag).Name);
+           // MessageBox.Show("All sticked documents were tagged with " + ((sender as TabNavApp.Api.Tags.TagListItem).DataContext as Tag).Name);
         }
 
         private void docSearchTB_KeyDown(object sender, KeyEventArgs e)
@@ -163,22 +178,12 @@ namespace TabNavApp.Views
 
         private void docSearchBT_Click(object sender, RoutedEventArgs e)
         {
-            var Script = HtmlPage.Document.CreateElement("script");
-            Script.SetAttribute("type", "text/javascript");
-            Script.SetProperty("text", "function CloseDialog() { window.frameElement.commitPopup('Closed with OK result'); return false;}");
-            //"return ExecuteOrDelayUntilScriptLoaded(" +
-            //"function pop() { SP.UI.ModalDialog.close(SP.UI.DialogResult.OK); }, \"sp.js\");");
-            //"var options = SP.UI.$create_DialogOptions(); options.width = 1080; options.height = 602;" +
-            //"options.url = \"/_Layouts/SkosTagFeatures/MainPage/MainPage.aspx?\" + params;" +
-            //"window.parent.SP.UI.ModalDialog.showModalDialog(options); }, \"sp.js\");}");
-            HtmlPage.Document.DocumentElement.AppendChild(Script);
-            this.Dispatcher.BeginInvoke(() => CloseWindow());
+            docQuery.getEntriesByName(docSearchTB.Text, docQueryCallback, null);
         }
 
         public void CloseWindow()
         {
 
-            //HtmlPage.Window.Invoke("CloseDialog");
         }
 
         private void tagSearchTB_KeyDown(object sender, KeyEventArgs e)
@@ -192,7 +197,7 @@ namespace TabNavApp.Views
             //thread-crossing!
             Deployment.Current.Dispatcher.BeginInvoke(() =>
             {
-                List<ReturnDocument> zw = ConverterClass.convertSparqlResultToListReturnDocument(set);     //convert SPARQLResultSet
+                List<ReturnDocument> zw = StaticHelper.convertSparqlResultToListReturnDocument(set);     //convert SPARQLResultSet
                 List<Document> docs = new List<Document>();
                 foreach (ReturnDocument doc in zw)
                 {
@@ -206,7 +211,7 @@ namespace TabNavApp.Views
                         server = doc.server,
                         UniqueID = doc.UniqueID
                     });
-                    docQuery.getDocTags(doc.UniqueID, docTagsCallback, docs.Last(), VirtuosoQuery.Silverlight.Docs.OrderDirection.ASC);
+                    docQuery.getEntryTags(doc.UniqueID, docTagsCallback, docs.Last(), VirtuosoQuery.Silverlight.Docs.OrderDirection.ASC);
                 }
                 documentController.Clear();
                 documentController.Add(docs.ToArray());
@@ -220,14 +225,14 @@ namespace TabNavApp.Views
             foreach(Tag tag in tagController.StickedItems)
                 tags.Add(tag.Uri);
             if(tags.Count>0)
-                docQuery.getDocsByTags(tags, docQueryCallback, null, VirtuosoQuery.Silverlight.Docs.OrderDirection.ASC);
+                docQuery.getEntriesByTags(tags, docQueryCallback, null);
         }
 
         private void getTagsOfStickyDocsBT_Click(object sender, RoutedEventArgs e)
         {
-            this.tagController.ClearAll();
+            this.tagController.Clear();
             foreach (Document doc in documentController.StickedItems)
-                docQuery.getDocTags(doc.UniqueID, docTagsCallback, this.tagController, VirtuosoQuery.Silverlight.Docs.OrderDirection.ASC);
+                docQuery.getEntryTags(doc.UniqueID, docTagsCallback, this.tagController, VirtuosoQuery.Silverlight.Docs.OrderDirection.ASC);
             tagController.Update(true);
         }
 
@@ -236,7 +241,7 @@ namespace TabNavApp.Views
                         //thread-crossing!
             Deployment.Current.Dispatcher.BeginInvoke(() =>
             {
-                List<ReturnTag> zw = ConverterClass.convertSparqlResultToListReturnTag(set);
+                List<ReturnTag> zw = StaticHelper.convertSparqlResultToListReturnTag(set);
 
                 if (dict.GetType() == typeof(Document))
                 {
@@ -251,6 +256,7 @@ namespace TabNavApp.Views
                     foreach (ReturnTag tag in zw)
                         tags.Add(new Tag() { Uri = tag.uri, Description = tag.description, AltLabels = tag.altLabels, Name = tag.prefLabel });
                     (dict as ListController<Tag>).Add(tags.ToArray());
+                    //(dict as ListController<Tag>).Stick(tags.ToArray());
                     (dict as ListController<Tag>).Update(true);
                 }
             });
@@ -261,7 +267,7 @@ namespace TabNavApp.Views
             this.tagController.ClearAll();
             if(docListContextM.DataContext.GetType() == typeof(Document))
             {
-                docQuery.getDocTags((docListContextM.DataContext as Document).UniqueID, docTagsCallback, this.tagController, VirtuosoQuery.Silverlight.Docs.OrderDirection.ASC);
+                docQuery.getEntryTags((docListContextM.DataContext as Document).UniqueID, docTagsCallback, this.tagController, VirtuosoQuery.Silverlight.Docs.OrderDirection.ASC);
             }
             tagController.Update(true);
         }
@@ -270,11 +276,11 @@ namespace TabNavApp.Views
         {
             if (docListContextM.DataContext != null && docListContextM.DataContext.GetType() == typeof(Document))
             {
-                docQuery.getDocsByTags((docListContextM.DataContext as Document).Tags.Keys.ToList(), docQueryCallback, null, VirtuosoQuery.Silverlight.Docs.OrderDirection.ASC);
+                docQuery.getEntriesByTags((docListContextM.DataContext as Document).Tags.Keys.ToList(), docQueryCallback, null);
             }
             else if (tagListContextM != null && tagListContextM.DataContext.GetType() == typeof(Tag))
             {
-                docQuery.getDocsByTags(new List<string>(){(tagListContextM.DataContext as Tag).Uri}, docQueryCallback, null, VirtuosoQuery.Silverlight.Docs.OrderDirection.ASC);
+                docQuery.getEntriesByTags(new List<string>(){(tagListContextM.DataContext as Tag).Uri}, docQueryCallback, null);
             }
             tagController.Update(true);
         }
@@ -324,13 +330,16 @@ namespace TabNavApp.Views
             mItem.Header = "delete one Tag:";
             this.deleteTagsContextM.Items.Add(mItem);
 
-            foreach (KeyValuePair<string, string> val in ((sender as MenuItem).DataContext as Document).Tags)
+            if (((sender as MenuItem).DataContext as Document).Tags != null)
             {
-                mItem = new MenuItem();
-                mItem.Header = val.Value;
-                mItem.DataContext = new Tuple<string, string, Document>(((sender as MenuItem).DataContext as Document).UniqueID, val.Key, (sender as MenuItem).DataContext as Document);
-                this.deleteTagsContextM.Items.Add(mItem);
-                mItem.Click += new RoutedEventHandler(deleteOneTag);
+                foreach (KeyValuePair<string, string> val in ((sender as MenuItem).DataContext as Document).Tags)
+                {
+                    mItem = new MenuItem();
+                    mItem.Header = val.Value;
+                    mItem.DataContext = new Tuple<string, string, Document>(((sender as MenuItem).DataContext as Document).UniqueID, val.Key, (sender as MenuItem).DataContext as Document);
+                    this.deleteTagsContextM.Items.Add(mItem);
+                    mItem.Click += new RoutedEventHandler(deleteOneTag);
+                } 
             }
 
             deleteTagsContextM.IsOpen = true;
@@ -413,6 +422,14 @@ namespace TabNavApp.Views
             {
                 documentController.Update(true);
             }
+        }
+
+        private void configLoadedCallbackFkt(object sender, EventArgs e)
+        {
+            //Deployment.Current.Dispatcher.BeginInvoke(() => { MessageBox.Show("config loaded"); });
+            docQuery = new EntryGraphQuery();
+            query = new VirtuosoSkosQuery();
+            //Deployment.Current.Dispatcher.BeginInvoke(() => { MessageBox.Show(query.initialized.ToString()); });
         }
     }
 }

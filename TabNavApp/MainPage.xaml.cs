@@ -14,7 +14,6 @@ using Microsoft.SharePoint.Client;
 using System.Threading;
 using System.Text;
 using TabNavApp.Api.Documents;
-using System.Windows.Browser;
 
 namespace TabNavApp
 {
@@ -22,9 +21,8 @@ namespace TabNavApp
     {
         public static bool DocumentsLoaded;
         public static Document[] LoadedDocuments;
-
-        public static TabNavApp.Api.Common.ListController<Document> docSearchListSaver { get; set; }
-        public static TabNavApp.Api.Common.ListController<TabNavApp.Api.Tags.Tag> tagSearchListSaver { get; set; }
+        public static string SiteUrl;
+        public static string ConfigFileUrl { get; private set; }
 
         public string loadGraphConceptUri { get; set; }
         public string loadGraphConceptName { get; set; }
@@ -32,20 +30,26 @@ namespace TabNavApp
         public MainPage(string documentIdString, string siteUrl, string listId)
         {
             InitializeComponent();
+            string host = System.Windows.Browser.HtmlPage.Document.DocumentUri.ToString();  //get config-file-url
+            ConfigFileUrl = "http://" + (new Uri(host)).Host + "/_Layouts/SkosTagFeatures/FeatureConfig.xml";
+                                 //load configurations
+            
+            SiteUrl = siteUrl;
             string[] documentIds = DocumentUtils.GetIDsFromString(documentIdString);
-            AsyncDocumentLoader asnycDocLoader = new AsyncDocumentLoader(siteUrl, listId, documentIds);
-            asnycDocLoader.WorkDone += new AsyncDocumentLoader.WorkDoneHandler(asnycDocLoader_WorkDone);
-            asnycDocLoader.LoadDocuments();
+            AsyncDocumentLoader asnycDocLoader = new AsyncDocumentLoader(siteUrl);
+            asnycDocLoader.LoadDocumentDone += new AsyncDocumentLoader.LoadDocumentDoneHanlder(asnycDocLoader_LoadDocumentDone);
+            asnycDocLoader.LoadDocuments(documentIds, listId);
             progressBar.IsIndeterminate = true;
         }
 
-        void asnycDocLoader_WorkDone(object sender, WorkDoneEventArgs e)
+        void asnycDocLoader_LoadDocumentDone(object sender, LoadDocumentEventArgs e)
         {
             LoadedDocuments = e.Documents;
             if (LoadedDocuments != null)
             {
                 DocumentsLoaded = true;
             }
+
             progressBar.Visibility = Visibility.Collapsed;
             ContentFrame.Navigate(new Uri("/MainView", UriKind.Relative));
         }
@@ -76,13 +80,6 @@ namespace TabNavApp
                 loadGraphConceptName = null;
                 loadGraphConceptUri = null;
             }
-            //if (ContentFrame.Content.GetType() == typeof(TabNavApp.Views.MainView))
-            //{
-            //    if (tagSearchListSaver != null)
-            //        (ContentFrame.Content as TabNavApp.Views.MainView).tagController = tagSearchListSaver;
-            //    if (docSearchListSaver != null)
-            //        (ContentFrame.Content as TabNavApp.Views.MainView).documentController = docSearchListSaver;
-            //}
         }
 
         // If an error occurs during navigation, show an error window

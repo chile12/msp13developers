@@ -5,12 +5,12 @@
     xmlns:navigation="clr-namespace:System.Windows.Controls;assembly=System.Windows.Controls.Navigation" 
     xmlns:uriMapper="clr-namespace:System.Windows.Navigation;assembly=System.Windows.Controls.Navigation"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-    mc:Ignorable="d" xmlns:sdk="http://schemas.microsoft.com/winfx/2006/xaml/presentation/sdk" Height="700" Width="Auto" d:DesignWidth="842">
+    mc:Ignorable="d" xmlns:sdk="http://schemas.microsoft.com/winfx/2006/xaml/presentation/sdk" Height="Auto" Width="Auto" d:DesignWidth="842">
 
-    <Grid x:Name="LayoutRoot" Style="{StaticResource LayoutRootGridStyle}" Height="700">
+    <Grid x:Name="LayoutRoot" Style="{StaticResource LayoutRootGridStyle}" Height="Auto">
 
-        <Border x:Name="ContentBorder" Style="{StaticResource ContentBorderStyle}" Margin="0,41,0,0" Height="700">
-            <navigation:Frame x:Name="ContentFrame" Style="{StaticResource ContentFrameStyle}" Navigated="ContentFrame_Navigated" NavigationFailed="ContentFrame_NavigationFailed" Padding="0" Height="560" VerticalContentAlignment="Top" VerticalAlignment="Top">
+        <Border x:Name="ContentBorder" Style="{StaticResource ContentBorderStyle}" Margin="0,41,0,0" Height="Auto">
+            <navigation:Frame x:Name="ContentFrame" Style="{StaticResource ContentFrameStyle}" Navigated="ContentFrame_Navigated" NavigationFailed="ContentFrame_NavigationFailed" Padding="0" Height="Auto" VerticalContentAlignment="Stretch" VerticalAlignment="Stretch">
                 <navigation:Frame.UriMapper>
                     <uriMapper:UriMapper>
                         <uriMapper:UriMapping Uri="/{pageName}" MappedUri="/Views/{pageName}.xaml" />

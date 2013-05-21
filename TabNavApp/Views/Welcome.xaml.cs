@@ -18,9 +18,6 @@ namespace TabNavApp
         public Welcome()
         {
             InitializeComponent();
-
-            Constants.skosGraphUri = "http://localhost:8890/UNESCO";
-            Constants.endpointAddress = "http://localhost:8890/sparql";
         }
 
         // Executes when the user navigates to this page.
@@ -30,12 +27,6 @@ namespace TabNavApp
 
         private void okBT_Click(object sender, RoutedEventArgs e)
         {
-            if (docGraphUriTB.Text != "")
-                Constants.docGraphUri = docGraphUriTB.Text;
-            if (skosGraphUriTB.Text != "")
-                Constants.skosGraphUri = skosGraphUriTB.Text;
-            if (sparqlEndpointUriTB.Text != "")
-                Constants.endpointAddress = sparqlEndpointUriTB.Text;
         }
     }
 }

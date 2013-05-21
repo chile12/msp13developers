@@ -14,14 +14,88 @@ using System.Linq;
 using System.Text;
 using System.Configuration;
 using System.Dynamic;
+using System.Xml;
 using VDS.RDF.Query;
 using VDS.RDF;
+using System.IO;
+using System.Threading;
 
 namespace VirtuosoQuery
 {
-    public static class ConverterClass
+    public static class StaticHelper
     {
-        private const int ReturnRowPropertyCount = 10;
+        private static AutoResetEvent stopWaitHandle = new AutoResetEvent(false);
+        public delegate void EventHandler(object sender, EventArgs args);  
+
+        private const string STR_SparqlEndpointUrl = "SparqlEndpointUrl";
+        private const string STR_DocumentGraphUri = "DocumentGraphUri";
+        private const string STR_SkosGraphUri = "SkosGraphUri";
+        private const string STR_SkosCoreUri = "SkosCoreUri";
+        private const string STR_CommonTagUri = "CommonTagUri";
+        private const string STR_DocGraphLanguageTag = "DocGraphLanguageTag";
+        private const string STR_SkosGraphLanguageTag = "SkosGraphLanguageTag";
+        private const string STR_DocEntryNumberLength = "0000000";
+        private const string STR_DocumentGraph = "DocumentGraph";
+        private const string STR_Language = "Language";
+        private const string STR_Additional = "Additional";
+        private const string STR_GraphSpecifics = "GraphSpecifics";
+        private const string STR_SearchPredicates = "SearchPredicates";
+        private const string STR_SearchStopWords = "SearchStopWords";
+        private const string STR_Configurations = "Configurations";
+        private const string STR_InnerXml = "InnerXml";
+        private const int ReturnRowPropertyCount = 10;  
+        
+        public static string SkosGraphLanguageTag {get; private set;}
+        public static string DocGraphLanguageTag { get; private set; }
+        public static string skos { get; private set; }
+        public static string ctag { get; private set; }
+        public static string endpointUri { get; private set; }
+        public static string docGraphUri { get; private set; }
+        public static string skosGraphUri { get; private set; }
+        public static string searchPredicates { get; private set; }
+        public static string searchStopWords { get; private set; }
+
+        public static void xmlConfigReader(string configUri, EventHandler configLoaded)
+        {
+            WebRequest request = HttpWebRequest.Create(configUri);
+            Tuple<WebRequest, EventHandler> tuple = new Tuple<WebRequest, EventHandler>(request, configLoaded);
+            request.BeginGetResponse(
+                new AsyncCallback(wc_DownloadStringCompleted), tuple);
+        }
+
+        static void wc_DownloadStringCompleted(IAsyncResult ar)
+        {
+            Tuple<WebRequest, EventHandler> tuple = (ar.AsyncState as Tuple<WebRequest, EventHandler>);
+            WebResponse response = tuple.Item1.EndGetResponse(ar);
+            Stream responseStream = response.GetResponseStream();
+            //try
+            //{
+                using (XmlReader reader = XmlReader.Create(responseStream))
+                {
+                    reader.ReadToFollowing(STR_DocumentGraph);
+                    endpointUri = reader.GetAttribute(STR_SparqlEndpointUrl);
+                    docGraphUri = reader.GetAttribute(STR_DocumentGraphUri);
+                    skosGraphUri = reader.GetAttribute(STR_SkosGraphUri);
+                    reader.ReadToFollowing(STR_Language);
+                    DocGraphLanguageTag = reader.GetAttribute(STR_DocGraphLanguageTag);
+                    SkosGraphLanguageTag = reader.GetAttribute(STR_SkosGraphLanguageTag);
+                    reader.ReadToFollowing(STR_SearchPredicates);
+                    reader.MoveToContent();
+                    searchPredicates = reader.ReadElementContentAsString();
+                    reader.ReadToFollowing(STR_SearchStopWords);
+                    reader.MoveToContent();
+                    searchStopWords = reader.ReadElementContentAsString();
+                    reader.ReadToFollowing(STR_Additional);
+                    skos = reader.GetAttribute(STR_SkosCoreUri);
+                    ctag = reader.GetAttribute(STR_CommonTagUri);
+                }
+            //}
+            //catch (Exception ex)
+            //{
+            //    throw new Exception("Error while loading configuration file: " + ex.Message);
+            //}
+                tuple.Item2.Invoke(null, new EventArgs());
+        }
 
         public static List<ReturnRow> convertSparqlResultToListReturnRow(SparqlResultSet set)
         {

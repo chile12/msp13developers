@@ -11,9 +11,12 @@ using System.Windows.Shapes;
 
 namespace TabNavApp.Api.Common
 {
+    /// <summary>
+    /// abstract class for all List-Items used in the ListBoxes
+    /// </summary>
     public abstract class Item
     {
-        public UserControl Control { get; set; }
-        public Brush Background { get; set; }
+        public UserControl Control { get; set; }        //the corresponding ListItem this Item is DataBoundObject of
+        public Brush Background { get; set; }           //the backgroundcolor of the corresponding ListItem
     }
 }

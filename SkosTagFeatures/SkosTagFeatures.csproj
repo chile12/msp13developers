@@ -24,6 +24,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <UseVSHostingProcess>false</UseVSHostingProcess>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -52,6 +53,9 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="Microsoft.SharePoint.Security" />
+    <Reference Include="VirtuosoDocGraphUpdate">
+      <HintPath>..\..\..\VirtuosoSkos\VirtuosoDocGraphUpdate\bin\Debug\VirtuosoDocGraphUpdate.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ControlTemplates\TagButton\TagButton.ascx.cs">
@@ -64,7 +68,11 @@
     <Compile Include="Features\ButtonIntegration\ButtonIntegration.EventReceiver.cs">
       <DependentUpon>ButtonIntegration.feature</DependentUpon>
     </Compile>
+    <Compile Include="Features\TabNavAppXap\TabNavAppXap.EventReceiver.cs">
+      <DependentUpon>TabNavAppXap.feature</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SPVirtuosoItemEventReceiversr.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="FeatureParts\Buttons\TagButton_DocLib\Elements.xml">
@@ -93,6 +101,7 @@
     <None Include="Package\Package.Template.xml">
       <DependentUpon>Package.package</DependentUpon>
     </None>
+    <Content Include="Layouts\SkosTagFeatures\FeatureConfig.xml" />
     <Content Include="Layouts\SkosTagFeatures\js\Global.js" />
     <Content Include="Layouts\SkosTagFeatures\MainPage\MainPage.aspx">
       <SubType>ASPXCodeBehind</SubType>
@@ -130,4 +139,17 @@
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{BB1F664B-9266-4fd6-B973-E1E44974B511}">
+        <DeploymentConfigurations>
+          <DeploymentConfiguration Name="retract solution only">
+            <DeploymentSteps>
+            </DeploymentSteps>
+            <RetractionSteps>Microsoft.VisualStudio.SharePoint.RecycleApplicationPool;Microsoft.VisualStudio.SharePoint.RetractSolution</RetractionSteps>
+          </DeploymentConfiguration>
+        </DeploymentConfigurations>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>

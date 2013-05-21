@@ -14,21 +14,37 @@ using Microsoft.SharePoint.Client;
 
 namespace TabNavApp.Api.Documents
 {
-    public class WorkDoneEventArgs
+    public class LoadDocumentEventArgs
     {
         public Document[] Documents { get; private set; }
+        public List List { get; private set; }
 
-        public WorkDoneEventArgs(Document[] documents)
+        public LoadDocumentEventArgs(Document[] Documents, List List)
         {
-            this.Documents = documents;
+            this.Documents = Documents;
+            this.List = List;
+        }
+    }
+
+    public class FindDocumentEventArgs
+    {
+        public List List { get; private set; }
+
+        public FindDocumentEventArgs(List List)
+        {
+            this.List = List;
         }
     }
 
     public class AsyncDocumentLoader
     {
-        public delegate void WorkDoneHandler(object sender, WorkDoneEventArgs e);
+        public delegate void FindDocumentDoneHandler(object sender, FindDocumentEventArgs e);
 
-        public event WorkDoneHandler WorkDone;
+        public delegate void LoadDocumentDoneHanlder(object sender, LoadDocumentEventArgs e);
+
+        public event FindDocumentDoneHandler FindDocumentDone;
+
+        public event LoadDocumentDoneHanlder LoadDocumentDone;
 
         private string siteUrl;
 
@@ -36,32 +52,109 @@ namespace TabNavApp.Api.Documents
 
         private string[] documentIds;
 
-        private Document[] docs;
-
-        protected void OnWorkDone(object sender, WorkDoneEventArgs e)
+        protected void OnFindDocumentDone(object sender, FindDocumentEventArgs e)
         {
-            if (WorkDone != null)
+            if (FindDocumentDone != null)
             {
-                WorkDone(this, e);
+                FindDocumentDone(this, e);
             }
         }
 
-        public AsyncDocumentLoader(string siteUrl, string listId, string[] documentIds)
+        protected void OnLoadDocumentDone(object sender, LoadDocumentEventArgs e)
         {
-            this.siteUrl = siteUrl;
-            this.listId = listId;
-            this.documentIds = documentIds;
+            if (LoadDocumentDone != null)
+            {
+                LoadDocumentDone(this, e);
+            }
         }
 
-        public void LoadDocuments()
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="siteUrl"></param>
+        public AsyncDocumentLoader(string siteUrl)
         {
+            this.siteUrl = siteUrl;
+        }
+
+        /// <summary>
+        /// Verify whether a document is somewhere in the sharepoint farm and return the containing list
+        /// </summary>
+        /// <param name="documentId">the document id</param>
+        public void FindDocument(string documentId)
+        {
+            this.documentIds = new string[] { documentId };
+            ThreadPool.QueueUserWorkItem(FindDocumentThread);
+        }
+
+        /// <summary>
+        /// Verify whether a document is in a specific list and return the list if so
+        /// </summary>
+        /// <param name="documentId">the document id</param>
+        /// <param name="listId">the list id</param>
+        public void FindDocument(string documentId, string listId)
+        {
+            this.documentIds = new string[] { documentId };
+            this.listId = listId;
+            ThreadPool.QueueUserWorkItem(FindDocumentInListThread);
+        }
+
+        /// <summary>
+        /// Find and load a list of documents in a list
+        /// </summary>
+        /// <param name="documentIds">the document ids</param>
+        /// <param name="listId">the list id</param>
+        public void LoadDocuments(string[] documentIds, string listId)
+        {
+            this.documentIds = documentIds;
+            this.listId = listId;
             ThreadPool.QueueUserWorkItem(LoadDocumentsThread);
         }
 
-
-        private void LoadDocumentsThread(object state)
+        private void FindDocumentThread(object state)
         {
-            docs = null;
+            List list = null;
+            try
+            {
+                using (ClientContext context = new ClientContext(siteUrl))
+                {
+                    ListCollection allLists = context.Web.Lists;
+                    context.Load(allLists);
+                    context.ExecuteQuery();
+
+                    foreach (List currentList in allLists)
+                    {
+                        if (currentList.BaseType != BaseType.None && currentList.BaseType != BaseType.Unused)
+                        {
+                            context.Load(currentList);
+                            context.ExecuteQuery();
+                           
+                            ListItemCollection col = currentList.GetItems(createDocumentCamlQuery());
+                            context.Load(col);
+                            context.ExecuteQuery();
+
+                            if (col.Count > 0)
+                            {
+                                list = currentList;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                //error loading items
+            }
+            Deployment.Current.Dispatcher.BeginInvoke(() =>
+            {
+                OnFindDocumentDone(this, new FindDocumentEventArgs(list));
+            });
+        }
+
+        private void FindDocumentInListThread(object state)
+        {
+            List list = null;
             try
             {
                 using (ClientContext context = new ClientContext(siteUrl))
@@ -69,7 +162,39 @@ namespace TabNavApp.Api.Documents
                     List currentList = context.Web.Lists.GetById(new Guid(listId));
                     context.Load(currentList);
                     context.ExecuteQuery();
+                    ListItemCollection col = currentList.GetItems(createDocumentCamlQuery());
+                    context.Load(col);
+                    context.ExecuteQuery();
 
+                    if (col.Count > 0)
+                    {
+                        list = currentList;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                //error loading items
+            }
+            Deployment.Current.Dispatcher.BeginInvoke(() =>
+            {
+                OnFindDocumentDone(this, new FindDocumentEventArgs(list));
+            });
+        }
+
+        private void LoadDocumentsThread(object state)
+        {
+            Document[] docs = null;
+            List list = null;
+            try
+            {
+                using (ClientContext context = new ClientContext(siteUrl))
+                {
+                    List currentList = context.Web.Lists.GetById(new Guid(listId));
+                    context.Load(currentList);
+                    context.ExecuteQuery();
+                    list = currentList;
+      
                     if (currentList.BaseType == BaseType.DocumentLibrary)
                     {
                         ListItemCollection col = currentList.GetItems(createDocumentCamlQuery());
@@ -109,10 +234,9 @@ namespace TabNavApp.Api.Documents
             }
             Deployment.Current.Dispatcher.BeginInvoke(() =>
             {
-                OnWorkDone(this, new WorkDoneEventArgs(docs));
+                OnLoadDocumentDone(this, new LoadDocumentEventArgs(docs, list));
             });
         }
-
 
         private CamlQuery createDocumentCamlQuery()
         {
@@ -126,8 +250,4 @@ namespace TabNavApp.Api.Documents
             return qry;
         }
     }
-
-
-
-
 }

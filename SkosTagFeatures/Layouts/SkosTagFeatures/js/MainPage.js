@@ -34,9 +34,9 @@ function onSilverlightError(sender, args) {
     throw new Error(errMsg);
 }
 
-function close() {
-    debugger;
-    window.parent.SP.UI.ModalDialog.RefreshPage(SP.UI.DialogResult.OK)
+function closeWindow(navigateToUrl) {
+    window.frameElement.commitPopup(navigateToUrl);
+    return false;
 }
 
 //get the value of a specific parameter from an URL via regEx

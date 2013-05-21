@@ -22,22 +22,20 @@ using System.Threading.Tasks;
 namespace VirtuosoQuery.Silverlight.Skos
 {
     /// <summary>
-    /// 
+    /// implements ISkosQuery: all queries pertaining to the skos-graph
     /// </summary>
-    public class VirtuosoSkosQuery : ISkosQuery
+    public class VirtuosoSkosQuery : TripleStoreQuery, ISkosQuery
     {
         public delegate void SearchResultCallback(Tuple<string[], List<object[]>> set);         //delegate for search results
         AutoResetEvent stopWaitHandle = new AutoResetEvent(false);                              //used for stopping a thread to wait for an other process to finish which then signales to proceed
         private SparqlResultSet stopGap = new SparqlResultSet();                                //ResultSet for temporary purposes
        
-        public SparqlRemoteEndpoint endpoint;                                                   //a Sparql-endpint
+        private SparqlRemoteEndpoint endpoint;                                                   //a Sparql-endpint
         private Dictionary<string, string> prefixes = new Dictionary<string, string>();         //stores al prefixes needed in this context
 
-
-        private string xsd = VirtuosoSkosSilverlight_dll.xmlSchema;                             //some standard schemata
-        private string skos = VirtuosoSkosSilverlight_dll.skosCore;
-        private string tagGraph = null;
-        private string docGraph = null;
+        private string skosCore;                                                                //skos-core uri
+        private string tagGraph = null;                                                         //skos-tag-graph uri
+        private string docGraph = null;                                                         //enty-graph uri
 
         private const string prefixSTR = "prefix";                                              //query-components
         private string languageTag;
@@ -46,35 +44,30 @@ namespace VirtuosoQuery.Silverlight.Skos
         private string queryFrom;
         private string queryWhere;
         private string queryOrder;
-        private string queryLanguageFilter;
+        private string queryLanguageFilter;                                                     //the laguage used
 
         /// <summary>
         /// constructor for a skos-query
         /// </summary>
         /// <param name="endpoint">needs an sparql-endpont to query on</param>
-        public VirtuosoSkosQuery(SparqlRemoteEndpoint endpoint, string skosGraphUri, string docGraphUri)
+        public VirtuosoSkosQuery()
         {
-            this.endpoint = endpoint;
-            this.docGraph = docGraphUri;
-            this.tagGraph = skosGraphUri;
+            
+            if (StaticHelper.endpointUri != null)
+            {
+                this.endpoint = new SparqlRemoteEndpoint(new Uri(StaticHelper.endpointUri));    //new endpoint-uri from the configurations
+                this.docGraph = StaticHelper.docGraphUri;
+                this.tagGraph = StaticHelper.skosGraphUri;
+                this.languageTag = StaticHelper.SkosGraphLanguageTag;                   //get the given language from config-file
+                this.skosCore = StaticHelper.skos;
 
-            //construct prefix-list from the config-file
-            //foreach (System.Collections.DictionaryEntry obj in VirtuosoSkosSilverlight_dll.ResourceManager.GetResourceSet(CultureInfo.CurrentCulture, true, false))
-            //{
-            //    if (obj.Key.ToString().Substring(0, prefixSTR.Length) == prefixSTR)
-            //    {
-            //        prefixes.Add(obj.Key.ToString().Substring(prefixSTR.Length), obj.Value.ToString());
-            //    }
-            //}
-
-            this.languageTag = "en";//VirtuosoSkosSilverlight_dll.skosLanguage;        //get the given language from config-file
-
-            queryPrefix = "PREFIX skos: <" + skos + "> ";                       //set simple query components
-            querySelect = "SELECT DISTINCT ?uri (str(?name) AS ?conceptname) ";
-            queryFrom = "FROM <" + tagGraph + "> ";
-            queryLanguageFilter = "FILTER langMatches( lang(?name), \"" + languageTag + "\" )";
+                queryPrefix = "PREFIX skos: <" + skosCore + "> ";                       //set simple query components
+                querySelect = "SELECT DISTINCT ?uri (str(?name) AS ?conceptname) ";
+                queryFrom = "FROM <" + tagGraph + "> ";
+                queryLanguageFilter = "FILTER langMatches( lang(?name), \"" + languageTag + "\" )";
+                initialized = true;
+            }
         }
-
 
         /// <summary>
         /// gets all concept-uris of predicate 'skos#narrower' from a given concept
@@ -86,7 +79,7 @@ namespace VirtuosoQuery.Silverlight.Skos
         public void narrower(SparqlResultsCallback callback, string concept, OrderDirection order, object state)
         {
             queryWhere = "WHERE { <" + concept + "> skos:narrower ?uri. ?uri <"             //fill out query components
-                + skos + "prefLabel> ?name " + queryLanguageFilter + "} ";
+                + skosCore + "prefLabel> ?name " + queryLanguageFilter + "} ";
             queryOrder = "ORDER BY " + order.ToString().Replace("NONE", "") + "(?name)";
             string query = querySelect + queryFrom + queryWhere + queryOrder;
             endpoint.QueryWithResultSet(query, callback, state);                    //place a query (callback; delegate for callhere(Resulset, object), state; a possible reach-trough object)
@@ -97,15 +90,23 @@ namespace VirtuosoQuery.Silverlight.Skos
         /// </summary>
         /// <param name="callback">callback-delegate the triple-store uses to callback with results</param>
         /// <param name="concept">the given concept (the object of narrower triple)</param>
+        /// <param name="callback">callback-delegate the triple-store uses to callback with results</param>        
+        /// <param name="state">an optional reach-though object</param>
         public void narrower(SparqlResultsCallback callback, string concept)
         {
             narrower(callback, concept, OrderDirection.NONE, null);
         }
-
+        /// <summary>
+        /// used for graph-navigation or visualization 
+        /// returns all concepts which are skosCore:broader to a given concept
+        /// </summary>
+        /// <param name="concept">concept-uri as string of the central concept</param>
+        /// <param name="callback">callback-delegate the triple-store uses to callback with results</param>      
+        /// <param name="state">an optional reach-though object</param>
         public void broader(SparqlResultsCallback callback, string concept, OrderDirection order, object state)
         {
             queryWhere = "WHERE { <" + concept + "> skos:broader ?uri. ?uri <"
-                + skos + "prefLabel> ?name FILTER langMatches( lang(?name), \"" + languageTag + "\" )} ";
+                + skosCore + "prefLabel> ?name FILTER langMatches( lang(?name), \"" + languageTag + "\" )} ";
             queryOrder = "ORDER BY " + order.ToString().Replace("NONE", "") + "(?name)";  
 
             //SparqlResultsCallback callback = new SparqlResultsCallback(sparqlCallback);
@@ -114,18 +115,25 @@ namespace VirtuosoQuery.Silverlight.Skos
             endpoint.QueryWithResultSet(query, callback, state);
 
         }
+        /// <summary>
+        /// used for graph-navigation or visualization 
+        /// returns all concepts which are skosCore:broader to a given concept -- without an ordered resultset
+        /// </summary>
+        /// <param name="concept">concept-uri as string of the central concept</param>
+        /// <param name="callback">callback-delegate the triple-store uses to callback with results</param>        
         public void broader(SparqlResultsCallback callback, string concept)
         {
             broader(callback, concept, OrderDirection.NONE, null);
         }
         /// <summary>
-        /// compare with public void narrower
+        /// used for graph-navigation or visualization 
+        /// returns all concepts which are transitively skosCore:broader to a given concept
         /// </summary>
-        /// <param name="callback"></param>
-        /// <param name="concept"></param>
-        /// <param name="maxDist"></param>
-        /// <param name="order"></param>
-        /// <param name="state"></param>
+        /// <param name="concept">concept-uri as string of the central concept</param>
+        /// <param name="order">orderdirection of the resultset for conceptnames</param>
+        /// <param name="callback">callback-delegate the triple-store uses to callback with results</param>        
+        /// <param name="state">an optional reach-though object</param>
+        /// <param name="maxDist">max. number of transitive iterations</param>  
         public void broaderTransitive(SparqlResultsCallback callback, string concept, int maxDist, OrderDirection order, object state)
         {
             querySelect = "SELECT DISTINCT ?concept ?name ?distance ";
@@ -139,18 +147,26 @@ namespace VirtuosoQuery.Silverlight.Skos
             //string query = SkosQueryBuilder.getQuery(Querys.Broader, OrderDirection.ASC, skosGraph.AbsoluteUri, new string[] { concept, maxDist.ToString() });
             
         }
+        /// <summary>
+        /// used for graph-navigation or visualization 
+        /// returns all concepts which are transitively skosCore:broader to a given concept -- without an ordered resultset
+        /// </summary>
+        /// <param name="concept">concept-uri as string of the central concept</param>
+        /// <param name="callback">callback-delegate the triple-store uses to callback with results</param>     
+        /// <param name="maxDist">max. number of transitive iterations</param>     
         public void broaderTransitive(SparqlResultsCallback callback,  string concept, int maxDist)
         {
             broaderTransitive(callback, concept, maxDist, OrderDirection.NONE, null);
         }
         /// <summary>
-        /// compare with public void narrower
+        /// used for graph-navigation or visualization 
+        /// returns all concepts which are transitively skosCore:narrower to a given concept
         /// </summary>
-        /// <param name="callback"></param>
-        /// <param name="concept"></param>
-        /// <param name="maxDist"></param>
-        /// <param name="order"></param>
-        /// <param name="state"></param>
+        /// <param name="concept">concept-uri as string of the central concept</param>
+        /// <param name="order">orderdirection of the resultset for conceptnames</param>
+        /// <param name="callback">callback-delegate the triple-store uses to callback with results</param>        
+        /// <param name="state">an optional reach-though object</param>
+        /// <param name="maxDist">max. number of transitive iterations</param>  
         public void narrowerTransitive(SparqlResultsCallback callback, string concept, int maxDist, OrderDirection order, object state)
         {
             querySelect = "SELECT DISTINCT ?concept ?name ?distance ";
@@ -162,17 +178,26 @@ namespace VirtuosoQuery.Silverlight.Skos
             endpoint.QueryWithResultSet(queryPrefix + querySelect + queryFrom + queryWhere + queryOrder, callback, state);
 
         }
+        /// <summary>
+        /// used for graph-navigation or visualization 
+        /// returns all concepts which are transitively skosCore:narrower to a given concept
+        /// </summary>
+        /// <param name="concept">concept-uri as string of the central concept</param>
+        /// <param name="callback">callback-delegate the triple-store uses to callback with results</param>     
+        /// <param name="maxDist">max. number of transitive iterations</param>  
         public void narrowerTransitive(SparqlResultsCallback callback, string concept, int maxDist)
         {
            narrowerTransitive(callback, concept, maxDist, OrderDirection.NONE, null);
         }
         /// <summary>
-        /// compare with public void narrower
+        /// used for graph-navigation or visualization 
+        /// returns all concepts which have at least one narrower/broader concepts of the narrower/broader concepts of a given concept
+        /// therefore those concepts are on a similar level in the hierarchy pertaining to a related context
         /// </summary>
-        /// <param name="callback"></param>
-        /// <param name="concept"></param>
-        /// <param name="order"></param>
-        /// <param name="state"></param>
+        /// <param name="concept">concept-uri as string of the central concept</param>
+        /// <param name="order">orderdirection of the resultset for conceptnames</param>
+        /// <param name="callback">callback-delegate the triple-store uses to callback with results</param>        
+        /// <param name="state">an optional reach-though object</param>
         public void siblings(SparqlResultsCallback callback, string concept, OrderDirection order, object state)
         {
             querySelect = "SELECT DISTINCT ?uri (str(?name) AS ?sibling) ";
@@ -185,17 +210,25 @@ namespace VirtuosoQuery.Silverlight.Skos
             endpoint.QueryWithResultSet(queryPrefix + querySelect + queryFrom + queryWhere + queryOrder, callback, state);
 
         }
+        /// <summary>
+        /// used for graph-navigation or visualization 
+        /// returns all concepts which have at least one narrower/broader concepts of the narrower/broader concepts of a given concept
+        /// therefore those concepts are on a similar level in the hierarchy pertaining to a related context
+        /// </summary>
+        /// <param name="concept">concept-uri as string of the central concept</param>
+        /// <param name="callback">callback-delegate the triple-store uses to callback with results</param>     
         public void siblings(SparqlResultsCallback callback, string concept)
         {
             siblings(callback, concept, OrderDirection.NONE, null);
         }
         /// <summary>
-        /// compare with public void narrower
+        /// used for graph-navigation or visualization 
+        /// returns all concepts which are skosCore:related to a given concept
         /// </summary>
-        /// <param name="callback"></param>
-        /// <param name="concept"></param>
-        /// <param name="order"></param>
-        /// <param name="state"></param>
+        /// <param name="concept">concept-uri as string of the central concept</param>
+        /// <param name="order">orderdirection of the resultset for conceptnames</param>
+        /// <param name="callback">callback-delegate the triple-store uses to callback with results</param>        
+        /// <param name="state">an optional reach-though object</param>
         public void relatedTo(SparqlResultsCallback callback, string concept, OrderDirection order, object state)
         {
             
@@ -207,17 +240,23 @@ namespace VirtuosoQuery.Silverlight.Skos
             endpoint.QueryWithResultSet(queryPrefix + querySelect + queryFrom + queryWhere + queryOrder, callback, state);
 
         }
+        /// <summary>
+        /// used for graph-navigation or visualization 
+        /// returns all concepts which are skosCore:related to a given concept
+        /// </summary>
+        /// <param name="concept">concept-uri as string of the central concept</param>
+        /// <param name="callback">callback-delegate the triple-store uses to callback with results</param>        
         public void relatedTo(SparqlResultsCallback callback, string concept)
         {
             relatedTo(callback, concept, OrderDirection.NONE, null);
         }
         /// <summary>
-        /// compare with public void narrower
+        /// returns all properties & values which have nor uri-values and are therefore not used for graph-navigation
         /// </summary>
-        /// <param name="callback"></param>
-        /// <param name="concept"></param>
-        /// <param name="order"></param>
-        /// <param name="state"></param>
+        /// <param name="concept">concept-uri as string of the central concept</param>
+        /// <param name="order">orderdirection of the resultset for properties</param>
+        /// <param name="callback">callback-delegate the triple-store uses to callback with results</param>        
+        /// <param name="state">an optional reach-though object</param>
         public void propertiesOf(SparqlResultsCallback callback, string concept, OrderDirection order, object state)
         {
             querySelect = "SELECT DISTINCT ?pred ?obj ";
@@ -232,17 +271,22 @@ namespace VirtuosoQuery.Silverlight.Skos
             endpoint.QueryWithResultSet(queryPrefix + querySelect + queryFrom + queryWhere + queryOrder, callback, state);
 
         }
+        /// <summary>
+        /// returns all properties & values which have nor uri-values and are therefore not used for graph-navigation
+        /// </summary>
+        /// <param name="concept">concept-uri as string of the central concept</param>
+        /// <param name="callback">callback-delegate the triple-store uses to callback with results</param>    
         public void propertiesOf(SparqlResultsCallback callback, string concept)
         {
             propertiesOf(callback, concept, OrderDirection.NONE, null);
         }
         /// <summary>
-        /// compare with public void narrower
+        /// returns all topconcepts of a given graph
         /// </summary>
-        /// <param name="callback"></param>
-        /// <param name="graphUri"></param>
-        /// <param name="order"></param>
-        /// <param name="state"></param>
+        /// <param name="graphUri">the graph-uri as string</param>
+        /// <param name="order">orderdirection of the resultset for conceptnames</param>
+        /// <param name="callback">callback-delegate the triple-store uses to callback with results</param>        
+        /// <param name="state">an optional reach-though object</param>
         public void topGraphConcepts(SparqlResultsCallback callback, string graphUri, OrderDirection order, object state)
         {
             querySelect = "SELECT DISTINCT ?topConcept ?conceptName ";
@@ -254,10 +298,19 @@ namespace VirtuosoQuery.Silverlight.Skos
             endpoint.QueryWithResultSet(queryPrefix + querySelect + from + queryWhere + queryOrder, callback, state);
 
         }
+        /// <summary>
+        /// returns all topconcepts of a given graph
+        /// </summary>
+        /// <param name="order">orderdirection of the resultset for conceptnames</param>
+        /// <param name="callback">callback-delegate the triple-store uses to callback with results</param>     
         public void topGraphConcepts(SparqlResultsCallback callback, OrderDirection order)
         {
             topGraphConcepts(callback, tagGraph, order, null);
         }
+        /// <summary>
+        /// returns all topconcepts of a given graph
+        /// </summary>
+        /// <param name="callback">callback-delegate the triple-store uses to callback with results</param>   
         public void topGraphConcepts(SparqlResultsCallback callback)
         {
             topGraphConcepts(callback, tagGraph, OrderDirection.NONE, null);
@@ -290,7 +343,7 @@ namespace VirtuosoQuery.Silverlight.Skos
             List<string> hitSaver = new List<string>();         //list for savekeeping of distinct hits for all predicates
             Regex regex = new Regex(@"[ ]{2,}");
             searchString = regex.Replace(searchString, @" ");   //delete alle extra whitespaces
-            string[] stopWords = VirtuosoSkosSilverlight_dll.enStopWordList.Replace(" ", "").Split(',');        //get stopword-list from config-file
+            string[] stopWords = StaticHelper.searchStopWords.Replace(" ", "").Replace("\n", "").Split(',');        //get stopword-list from config-file
             
 
             //remove stop-words
@@ -309,7 +362,7 @@ namespace VirtuosoQuery.Silverlight.Skos
 
             //take relevant skos:predicates from settings file, the order of their entry is also of importance
             //the first entry has the highest relevance, prefLabel gets an extra 100% relevance in the course of this algorithm
-            string[] predicates = VirtuosoSkosSilverlight_dll.searchPredicates.Replace(';', ',').Replace(" ", "").Split(',');
+            string[] predicates = StaticHelper.searchPredicates.Replace(';', ',').Replace(" ", "").Replace("\n", "").Split(',');
 
             querySelect = "SELECT ?uri (str(?name) as ?concept) ?hit ";
 
@@ -413,12 +466,12 @@ namespace VirtuosoQuery.Silverlight.Skos
             }).Start();
         }
         /// <summary>
-        /// compare with public void narrower
+        /// returns all collections a given concept is a member of (transitively!)
         /// </summary>
-        /// <param name="callback"></param>
-        /// <param name="concept"></param>
-        /// <param name="order"></param>
-        /// <param name="state"></param>
+        /// <param name="concept">concept-uri as string of the central concept</param>
+        /// <param name="order">orderdirection of the resultset for conceptnames</param>
+        /// <param name="callback">callback-delegate the triple-store uses to callback with results</param>        
+        /// <param name="state">an optional reach-though object</param>
         public void memberOf(SparqlResultsCallback callback, string concept, OrderDirection order, object state)
         {
             querySelect = "SELECT ?uri (str(?name) as ?name) ";
@@ -431,17 +484,22 @@ namespace VirtuosoQuery.Silverlight.Skos
             endpoint.QueryWithResultSet(queryPrefix + querySelect + queryFrom + queryWhere + queryOrder, callback, state);
 
         }
+        /// <summary>
+        /// returns all collections a given concept is a member of (transitively!)
+        /// </summary>
+        /// <param name="concept">concept-uri as string of the central concept</param>
+        /// <param name="callback">callback-delegate the triple-store uses to callback with results</param>  
         public void memberOf(SparqlResultsCallback callback, string concept)
         {
             memberOf(callback, concept, OrderDirection.NONE, null);
         }
         /// <summary>
-        /// compare with public void narrower
+        /// returns all members (collections or concepts) of a given collection
         /// </summary>
-        /// <param name="callback"></param>
-        /// <param name="collection"></param>
-        /// <param name="order"></param>
-        /// <param name="state"></param>
+        /// <param name="collection">uri of the given collection</param>
+        /// <param name="order">orderdirection of the resultset for conceptnames</param>
+        /// <param name="callback">callback-delegate the triple-store uses to callback with results</param>        
+        /// <param name="state">an optional reach-though object</param>
         public void getMembersOf(SparqlResultsCallback callback, string collection, OrderDirection order, object state)
         {
             querySelect = "SELECT ?member (str(?name) as ?name)";
@@ -452,17 +510,22 @@ namespace VirtuosoQuery.Silverlight.Skos
             endpoint.QueryWithResultSet(queryPrefix + querySelect + queryFrom + queryWhere + queryOrder, callback, state);
 
         }
+        /// <summary>
+        /// returns all members (collections or concepts) of a given collection
+        /// </summary>
+        /// <param name="collection">uri of the given collection</param>
+        /// <param name="callback">callback-delegate the triple-store uses to callback with results</param> 
         public void getMembersOf(SparqlResultsCallback callback, string collection)
         {
             getMembersOf(callback, collection, OrderDirection.NONE, null);
         }
         /// <summary>
-        /// compare with public void narrower
+        /// gets all members (transitively, only concepts) of a given collection
         /// </summary>
-        /// <param name="callback"></param>
-        /// <param name="collection"></param>
-        /// <param name="order"></param>
-        /// <param name="state"></param>
+        /// <param name="collection">uri of the given collection</param>
+        /// <param name="order">orderdirection of the resultset for conceptnames</param>
+        /// <param name="callback">callback-delegate the triple-store uses to callback with results</param>        
+        /// <param name="state">an optional reach-though object</param>
         public void getTransMembersOf(SparqlResultsCallback callback, string collection, OrderDirection order, object state)
         {
             querySelect = "SELECT ?concept (str(?name) as ?name) ";
@@ -475,6 +538,11 @@ namespace VirtuosoQuery.Silverlight.Skos
             endpoint.QueryWithResultSet(queryPrefix + querySelect + queryFrom + queryWhere + queryOrder, callback, state);
 
         }
+        /// <summary>
+        /// gets all members (transitively, only concepts) of a given collection
+        /// </summary>
+        /// <param name="collection">uri of the given collection</param>
+        /// <param name="callback">callback-delegate the triple-store uses to callback with results</param> 
         public void getTransMembersOf(SparqlResultsCallback callback, string collection)
         {
             getTransMembersOf(callback, collection, OrderDirection.NONE, null);
@@ -517,7 +585,12 @@ namespace VirtuosoQuery.Silverlight.Skos
             queryWhere = "WHERE { ?uri a skos:Concept. } ";
             endpoint.QueryWithResultSet(queryPrefix + querySelect + queryFrom + queryWhere , callback, state);
         }
-
+        /// <summary>
+        /// special query for creation of 'ReturnTag'-objects, gets the needed properties to create a ReturnTag
+        /// </summary>
+        /// <param name="conceptUri">the tag-uri</param>
+        /// <param name="callback">callback-delegate the triple-store uses to callback with results</param>        
+        /// <param name="state">an optional reach-though object</param>
         public void getReturnTag(string conceptUri, SparqlResultsCallback callback, object state)
         {
             querySelect = "SELECT ?uri (str(?name) as ?name)  (sql:group_concat(?altLabel , \", \") AS ?altLabels) (STR(?description) as ?description) ";

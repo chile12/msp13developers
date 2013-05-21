@@ -44,8 +44,9 @@ namespace TabNavApp.Api.Common
         public List<T> Items
         {
             get { 
-                //List<T> zw = itemList;
-                //zw.InsertRange(0, stickiedList);
+                foreach(T t in stickiedList)
+                    if(itemList.Contains(t))
+                        itemList.Remove(t);
                 return itemList;
             }
         }

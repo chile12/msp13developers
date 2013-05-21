@@ -14,6 +14,9 @@ using VirtuosoQuery;
 
 namespace TabNavApp.Api.Documents
 {
+    /// <summary>
+    /// the data object behind every DocumentListItem
+    /// </summary>
     public class Document : Item
     {
         public string Name { get; set; }

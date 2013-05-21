@@ -14,7 +14,7 @@ using TabNavApp.Api.Common;
 namespace TabNavApp.Api.Tags
 {
     /// <summary>
-    /// depricated
+    /// the data object behind every tagListItem
     /// </summary>
     public class Tag : Item
     {

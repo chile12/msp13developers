@@ -1,5 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns:dm0="http://schemas.microsoft.com/VisualStudio/2008/DslTools/Core" dslVersion="1.0.0.0" Id="22cd1745-317a-43ce-a3d8-6f4b69f7238a" solutionId="22cd1745-317a-43ce-a3d8-6f4b69f7238a" resetWebServer="false" name="TagButton" xmlns="http://schemas.microsoft.com/VisualStudio/2008/SharePointTools/PackageModel">
+  <assemblies>
+    <customAssembly location="VirtuosoDocGraphUpdate.dll" deploymentTarget="GlobalAssemblyCache" sourcePath="..\..\..\VirtuosoSkos\VirtuosoDocGraphUpdate\bin\Debug\VirtuosoDocGraphUpdate.dll" />
+    <customAssembly location="dotNetRDF.dll" deploymentTarget="GlobalAssemblyCache" sourcePath="..\..\..\..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio 10.0\dotNetRDF\Core\net35\dotNetRDF.dll" />
+    <customAssembly location="VDS.Common.dll" deploymentTarget="GlobalAssemblyCache" sourcePath="..\..\..\..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio 10.0\dotNetRDF\Core\net35\VDS.Common.dll" />
+    <customAssembly location="Newtonsoft.Json.dll" deploymentTarget="GlobalAssemblyCache" sourcePath="..\..\..\..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio 10.0\dotNetRDF\Core\net35\Newtonsoft.Json.dll" />
+    <customAssembly location="HtmlAgilityPack.dll" deploymentTarget="GlobalAssemblyCache" sourcePath="..\..\..\..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio 10.0\dotNetRDF\Core\net35\HtmlAgilityPack.dll" />
+  </assemblies>
   <features>
     <featureReference itemId="ead8ae1f-0f6a-4913-847b-8f12b8a16a46" />
     <featureReference itemId="eb8d1a56-f215-4b79-b99e-248fe693b0a3" />

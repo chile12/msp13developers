@@ -3,6 +3,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.UI.WebControls.WebParts;
 using System.Web;
+using Microsoft.SharePoint;
 
 namespace TagButton.ControlTemplates.TagButton
 {
@@ -21,14 +22,13 @@ namespace TagButton.ControlTemplates.TagButton
         /// <param name="e">not needed</param>
         protected void ImageButton1_Click(object sender, ImageClickEventArgs e)
         {
-            string javaScript =        
+            string javaScript =
                "\n<script language=JavaScript>\n" +
                "OpenTabNavApp();\n" +
                "</script>\n";
-  
-            //run script on sharepoint
-           this.Parent.Page.ClientScript.RegisterStartupScript(this.GetType(), "Button1_ClickScript", javaScript, false);
 
+            //run script on sharepoint
+            this.Parent.Page.ClientScript.RegisterStartupScript(this.GetType(), "Button1_ClickScript", javaScript, false);
         }
     }
 }

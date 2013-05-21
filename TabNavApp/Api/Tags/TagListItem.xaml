@@ -8,7 +8,7 @@
 
     <Grid x:Name="LayoutRoot" Background="{Binding Background}" DataContext="{Binding}" Height="50" Width="Auto" MouseLeftButtonDown="LayoutRoot_MouseLeftButtonDown" MouseRightButtonDown="LayoutRoot_MouseRightButtonDown">
         <TextBlock FontFamily="Verdana" Text="{Binding Name}" Margin="57,0" Foreground="#FF43806C" FontSize="16" VerticalAlignment="Top" Height="20" Name="prefLabelTB"></TextBlock>
-
+        
         <TextBlock FontFamily="Verdana" Text="{Binding AltLabels}" FontSize="10" Foreground="#FF646464" Height="15" Margin="57,20,57,0" Name="altLabelsTB" VerticalAlignment="Top" />
         <TextBlock FontFamily="Verdana" Text="{Binding Description}" FontSize="10" Foreground="#FF484848" Height="15" Margin="57,35,57,0" Name="descriptionTB" VerticalAlignment="Top" IsHitTestVisible="False" />
         <Button HorizontalAlignment="Right" Margin="0,5,5,0" Name="tagButton" Width="40" Click="tagButton_Click" Height="40" VerticalAlignment="Top" >

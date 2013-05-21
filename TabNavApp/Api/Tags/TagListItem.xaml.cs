@@ -20,8 +20,8 @@ namespace TabNavApp.Api.Tags
     /// </summary>
     public partial class TagListItem : UserControl
     {
+        private const int INT_StringlengthForSubLabels = 70;
         private MainView MainView;
-        private DependencyObject currentDpendencyObject;
         private Item Item;
         /// <summary>
         /// ...
@@ -40,28 +40,39 @@ namespace TabNavApp.Api.Tags
         void ListItem_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             Initialize(sender, e);
-            this.currentDpendencyObject = MainView;
             Tag tag = Item as Tag;
-            if (tag != null && tag.Description != null && tag.Description.Length > 50)
+            if (tag != null && tag.Description != null && tag.Description.Length > INT_StringlengthForSubLabels)
             {
-                tag.Description = tag.Description.Substring(0, 50) + "...";
+                tag.Description = tag.Description.Substring(0, INT_StringlengthForSubLabels) + "...";
                 this.descriptionTB.Text = tag.Description;
             }
-
+            if (tag != null && tag.AltLabels != null && tag.AltLabels.Length > INT_StringlengthForSubLabels)
+            {
+                tag.AltLabels = tag.AltLabels.Substring(0, INT_StringlengthForSubLabels) + "...";
+                this.altLabelsTB.Text = tag.AltLabels;
+            }
             if (Item.Background != null)
                 this.LayoutRoot.Background = Item.Background;
             else
                 this.LayoutRoot.Background = Constants.brush_default;
         }
 
-
+        /// <summary>
+        /// initializes Item and gets the parent of the parent-container
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Initialize(object sender, DependencyPropertyChangedEventArgs e)
         {
             getMainViewFromSender(sender);
-            Item = this.DataContext as Item;
-            Item.Control = this;
+            Item = this.DataContext as Item;    //DataContext is a Tag
+            Item.Control = this;                
         }
-
+        /// <summary>
+        /// since the parent of this control is not been set, the corresponding MainView is somewhere up the visual tree
+        /// this methode seeks for the MainView object
+        /// </summary>
+        /// <param name="sender"></param>
         private void getMainViewFromSender(object sender)
         {
             DependencyObject mainView = sender as DependencyObject;
@@ -85,7 +96,11 @@ namespace TabNavApp.Api.Tags
             if (MainView != null)       //call click-methode
                 MainView.tagButtonClick(this, e);
         }
-
+        /// <summary>
+        /// mouse event: catches double-clicks and toggles sticky-state
+        /// </summary>
+        /// <param name="sender">this</param>
+        /// <param name="e"></param>
         private void LayoutRoot_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ClickCount == 2)
@@ -94,13 +109,22 @@ namespace TabNavApp.Api.Tags
                 MainView.tagController.Update(true);
             }
         }
-
+        /// <summary>
+        /// event: catches the click on the graph-view button, navigates to the graph-vie-tab and to the clicked concept
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void graphButton_Click(object sender, RoutedEventArgs e)
         {
             //get the MainPage
-            var mainPage = currentDpendencyObject;
+            var mainPage = sender as DependencyObject;
+            //get the MainPage somewhere up the visual-tree
             while (mainPage != null)
             {
+                if (mainPage.GetType() == typeof(MainView)){     //save current tag-list
+                    (mainPage as MainView).tagController.Update(true);
+                    (mainPage as MainView).documentController.Update(true);
+                }
                 if (mainPage.GetType() == typeof(MainPage))
                     break;
 
@@ -109,11 +133,16 @@ namespace TabNavApp.Api.Tags
             if (mainPage != null)
             {
                 (mainPage as MainPage).ContentFrame.Navigate(new Uri("/SearchGraph", UriKind.Relative));
+                //save the selected tag with corresponding graph uri
                 (mainPage as MainPage).loadGraphConceptUri = (this.DataContext as Tag).Uri;
                 (mainPage as MainPage).loadGraphConceptName = (this.DataContext as Tag).Name;
             }
         }
-
+        /// <summary>
+        /// mouse event: catches right-clicks -> calles the contextmenu-load methode
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void LayoutRoot_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
             e.Handled = true;

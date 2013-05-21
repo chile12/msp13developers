@@ -64,7 +64,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="dotNetRDF">
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio 10.0\dotNetRDF\Core\sl4\dotNetRDF.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio 10.0\dotNetRDF\Core\sl4\dotNetRDF.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp, Version=5.0.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
     <Reference Include="Microsoft.SharePoint.Client.Silverlight">
@@ -75,7 +75,7 @@
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="SilverlightCompLib">
-      <HintPath>..\..\zzz\BagOTricks\BagOTricksGraph\Bin\Debug\SilverlightCompLib.dll</HintPath>
+      <HintPath>..\..\..\zzz\BagOTricks\SilverlightCompLib\Bin\Debug\SilverlightCompLib.dll</HintPath>
     </Reference>
     <Reference Include="System.ComponentModel.DataAnnotations, Version=5.0.5.0, Culture=neutral, PublicKeyToken=ddd0da4d3e678217" />
     <Reference Include="System.Runtime.Serialization" />
@@ -195,6 +195,7 @@
     <Resource Include="Icons\forward.png" />
     <Resource Include="Icons\search.png" />
     <Resource Include="Icons\up.png" />
+    <Resource Include="Icons\undo.png" />
     <Content Include="System.Windows.Controls.Input.Toolkit.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />

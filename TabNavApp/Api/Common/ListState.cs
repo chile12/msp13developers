@@ -12,11 +12,17 @@ using System.Collections.Generic;
 
 namespace TabNavApp.Api.Common
 {
+    /// <summary>
+    /// Class saves the current state of a ListController, so it can be recalled later on
+    /// </summary>
+    /// <typeparam name="T">in this scenarion T will be Tag or Document</typeparam>
     public class ListState<T>
     {
-        private T[] stickiedList;
-        private T[] itemList;
-
+        private T[] stickiedList;       //the list of sticked Items
+        private T[] itemList;           //all non-sticked Items
+        /// <summary>
+        /// takes and returns the sticked-Items_lsit
+        /// </summary>
         public T[] StickiedList
         {
             get
@@ -38,15 +44,20 @@ namespace TabNavApp.Api.Common
                 stickiedList = value;
             }
         }
-
+        /// <summary>
+        /// gets and returns normal item list
+        /// </summary>
         public T[] ItemList
         {
             get
             {
-                if (itemList != null && itemList[0] != null)
+                if (itemList != null && itemList.Length >0)
                 {
                     foreach (T t in itemList)
-                        (t as Item).Background = Constants.brush_default; 
+                    {
+                        if (t != null)
+                            (t as Item).Background = Constants.brush_default;
+                    }
                 }
                 return itemList;
             }
@@ -55,14 +66,20 @@ namespace TabNavApp.Api.Common
                 itemList = value;
             }
         }
-
+        /// <summary>
+        /// adds a new sticked Item
+        /// </summary>
+        /// <param name="t"></param>
         public void AddStickedItem(T t){
             T[] zw = new T[stickiedList.Length + 1];
             zw[0] = t;
             Array.ConstrainedCopy(stickiedList, 0, zw, 1, stickiedList.Length);
             stickiedList = zw;
         }
-
+        /// <summary>
+        /// adds a new Item to the ItemList
+        /// </summary>
+        /// <param name="t"></param>
         public void AddItem(T t)
         {
             T[] zw = new T[itemList.Length + 1];
@@ -70,7 +87,11 @@ namespace TabNavApp.Api.Common
             Array.ConstrainedCopy(stickiedList, 0, zw, 1, itemList.Length);
             itemList = zw;
         }
-
+        /// <summary>
+        /// constructor
+        /// </summary>
+        /// <param name="stickiedList"></param>
+        /// <param name="itemList"></param>
         public ListState(T[] stickiedList, T[] itemList)
         {
             this.stickiedList = stickiedList;
