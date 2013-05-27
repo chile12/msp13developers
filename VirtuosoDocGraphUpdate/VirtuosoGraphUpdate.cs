@@ -11,7 +11,7 @@ using Microsoft.SharePoint;
 
 namespace VirtuosoDocGraphUpdate
 {
-    public enum Entry { Generic, Document, Discussion, Survey, Issue, Page }
+    public enum Entry { Generic, Document, Discussion, Survey, Issue, Page, Event }
     public class VirtuosoGraphUpdate
     {
         private SparqlRemoteEndpoint endpoint;

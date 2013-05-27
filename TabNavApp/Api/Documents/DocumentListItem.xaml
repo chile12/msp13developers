@@ -7,11 +7,12 @@
     d:DesignHeight="81" d:DesignWidth="462" Height="50" Width ="Auto" HorizontalContentAlignment="Stretch" MouseLeftButtonDown="UserControl_MouseLeftButtonDown">
     
     <Grid x:Name="LayoutRoot" Background="Transparent" Height="50" Width="Auto" MouseRightButtonDown="LayoutRoot_MouseRightButtonDown">
-        <TextBlock FontFamily="Verdana" FontSize="14" Foreground="#FF4F8DCE" Height="20" Margin="12,0,59,0" Name="prefLabelTB" Text="{Binding Name}" VerticalAlignment="Top" />
-        <TextBlock FontFamily="Verdana" FontSize="10" Foreground="#FF484848" Height="15" Margin="12,20,59,0" Name="altLabelsTB" Text="{Binding CreationDate_Author}" VerticalAlignment="Top" />
-        <TextBlock FontFamily="Verdana" FontSize="10" Foreground="#FF484848" Height="15" Margin="12,35,59,0" Name="descriptionTB"  VerticalAlignment="Top" />
+        <TextBlock FontFamily="Verdana" FontSize="14" Foreground="#FF4F8DCE" Height="20" Margin="53,0,59,0" Name="prefLabelTB" Text="{Binding Name}" VerticalAlignment="Top" />
+        <TextBlock FontFamily="Verdana" FontSize="10" Foreground="#FF484848" Height="15" Margin="53,20,59,0" Name="altLabelsTB" Text="{Binding CreationDate_Author}" VerticalAlignment="Top" />
+        <TextBlock FontFamily="Verdana" FontSize="10" Foreground="#FF484848" Height="15" Margin="53,35,59,0" Name="descriptionTB"  VerticalAlignment="Top" />
         <Button ToolTipService.ToolTip="Find this document in Sharepoint" Height="40" Margin="0,6,6,0" Name="button1" VerticalAlignment="Top" HorizontalAlignment="Right" Width="40" Click="button1_Click">
             <Image Source="/TabNavApp;component/Icons/undo.png" ></Image>
         </Button>
+        <Image HorizontalAlignment="Left" Margin="3,3,3,3" Name="Icon" Stretch="Fill" Width="44" />
     </Grid>
 </UserControl>

@@ -14,6 +14,7 @@ using Microsoft.SharePoint.Client;
 using System.Threading;
 using System.Text;
 using TabNavApp.Api.Documents;
+using VirtuosoQuery;
 
 namespace TabNavApp
 {
@@ -27,9 +28,12 @@ namespace TabNavApp
         public string loadGraphConceptUri { get; set; }
         public string loadGraphConceptName { get; set; }
 
-        public MainPage(string documentIdString, string siteUrl, string listId)
+        private string docType;
+
+        public MainPage(string documentIdString, string docType, string siteUrl, string listId)
         {
             InitializeComponent();
+            this.docType = docType;
             string host = System.Windows.Browser.HtmlPage.Document.DocumentUri.ToString();  //get config-file-url
             ConfigFileUrl = "http://" + (new Uri(host)).Host + "/_Layouts/SkosTagFeatures/FeatureConfig.xml";
                                  //load configurations
@@ -45,9 +49,15 @@ namespace TabNavApp
         void asnycDocLoader_LoadDocumentDone(object sender, LoadDocumentEventArgs e)
         {
             LoadedDocuments = e.Documents;
-            if (LoadedDocuments != null)
+            if (LoadedDocuments != null && LoadedDocuments.Length > 0)
             {
                 DocumentsLoaded = true;
+                foreach (Document doc in LoadedDocuments)
+                {
+                    if (doc != null)
+                        doc.ListType = (Entry)(Enum.Parse(typeof(Entry), docType, false));
+                }
+
             }
 
             progressBar.Visibility = Visibility.Collapsed;

@@ -1,23 +1,23 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Elements xmlns="http://schemas.microsoft.com/sharepoint/">
   <CustomAction
-    Id="Ribbon.Documents.Tagging"
+    Id="Ribbon.Calendar.Events.Tagging"
     Location="CommandUI.Ribbon">
     <CommandUIExtension>
       <CommandUIDefinitions>
         <CommandUIDefinition
-          Location="Ribbon.Documents.Groups._children">
+          Location="Ribbon.Calendar.Events.Groups._children">
           <Group
-            Id="Ribbon.Documents.Tagging"
+            Id="Ribbon.Calendar.Events.Tagging.TaggingGroup"
             Sequence="80"
             Description="Tagging Group"
             Title="Tagging"
             Command="EnableTagging"
             Template="Ribbon.Templates.Flexible2">
-            <Controls Id="Ribbon.Documents.Tagging.Controls">
+            <Controls Id="Ribbon.Calendar.Events.Tagging.TaggingGroup.Controls">
               <Button
-                Id="Ribbon.Documents.Tagging.AddTag"
-                Command="AddTagCommand"
+                Id="Ribbon.Calendar.Events.Tagging.AddTag"
+                Command="EventAddTagCommand"
                 Image16by16="/_layouts/images/NoteBoard_16x16.png"
                 Image32by32="/_layouts/images/NoteBoard_32x32.png"
                 LabelText="Tag Item"
@@ -27,11 +27,11 @@
           </Group>
         </CommandUIDefinition>
         <CommandUIDefinition
-          Location="Ribbon.Documents.Scaling._children">
+          Location="Ribbon.Calendar.Events.Scaling._children">
           <MaxSize
-            Id="Ribbon.Documents.Scaling.Tagging.MaxSize"
+            Id="Ribbon.Calendar.Events.Tagging.TaggingGroup.MaxSize"
             Sequence="15"
-            GroupId="Ribbon.Documents.Tagging"
+            GroupId="Ribbon.Calendar.Events.Tagging.TaggingGroup"
             Size="LargeLarge" />
         </CommandUIDefinition>
       </CommandUIDefinitions>
@@ -40,8 +40,8 @@
           Command="EnableTagging"
           CommandAction="javascript:return true;" />
         <CommandUIHandler
-          Command="AddTagCommand"
-          CommandAction="javascript:TabNavApp_GetDocsPopUp('Document');"/>
+          Command="EventAddTagCommand"
+          CommandAction="javascript:TabNavApp_GetDocsPopUp('Event');"/>
       </CommandUIHandlers>
     </CommandUIExtension>
   </CustomAction>

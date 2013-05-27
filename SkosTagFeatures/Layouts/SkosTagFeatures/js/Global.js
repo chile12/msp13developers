@@ -5,7 +5,7 @@ function TabNavApp_PopUp(params) {
     function pop() {
         var options = {
             url: "/_Layouts/SkosTagFeatures/MainPage/MainPage.aspx?" + params,
-            title: "Taxonomy & Tagging Control",
+            title: "Tagging Control",
             allowMaximize: true,
             showClose: true,
             width: 1080,
@@ -54,17 +54,21 @@ function GetParameters_AsyncRecursive(idstring, ctx, i, count, items, list) {
 }
 
 //Call to look up Document parameters and open popup
-function TabNavApp_GetDocsPopUp() {
+function TabNavApp_GetDocsPopUp(docType) {
     var ctx = SP.ClientContext.get_current();
     var listId = SP.ListOperation.Selection.getSelectedList();
     var list = ctx.get_web().get_lists().getById(listId);
     var selectedItems = SP.ListOperation.Selection.getSelectedItems(ctx);
     var itemCount = CountDictionary(selectedItems);
     
+
     if (itemCount == 0) {
         alert('No Items selected!');
         return;
     }
-    var idstring = "listId=" + listId + "&docs=";
+    var idstring = "docType=" + docType +"&listId=" + listId + "&docs=";
     GetParameters_AsyncRecursive(idstring, ctx, 0, itemCount, selectedItems, list);
 }
+
+
+

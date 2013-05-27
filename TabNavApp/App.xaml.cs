@@ -32,6 +32,7 @@ namespace TabNavApp
             string documentIds = null;
             string url = null;
             string listId = null;
+            string docType = null;
 
             if (e.InitParams.ContainsKey("docs"))
                 documentIds = e.InitParams["docs"];
@@ -42,8 +43,11 @@ namespace TabNavApp
             if (e.InitParams.ContainsKey("listId"))
                 listId = e.InitParams["listId"];
 
+            if (e.InitParams.ContainsKey("docType"))
+                docType = e.InitParams["docType"];
+
             //initialize the app with UniqueID array or null, in case there are no GUIDS available
-            this.RootVisual = new MainPage(documentIds, url, listId);
+            this.RootVisual = new MainPage(documentIds, docType, url, listId);
         }
 
         private void Application_UnhandledException(object sender, ApplicationUnhandledExceptionEventArgs e)

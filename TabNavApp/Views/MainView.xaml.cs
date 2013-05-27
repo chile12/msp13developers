@@ -12,7 +12,7 @@ using System.Windows.Shapes;
 using System.Windows.Navigation;
 using VirtuosoQuery;
 using VirtuosoQuery.Silverlight.Skos;
-using VirtuosoQuery.Silverlight.Docs;
+using VirtuosoQuery.Silverlight.Entry;
 using VDS.RDF;
 using TabNavApp.Api.Documents;
 using TabNavApp.Api.Common;
@@ -26,6 +26,7 @@ namespace TabNavApp.Views
 {
     /// <summary>
     /// the tagging-page provides full tagging control
+    /// in general: all references to 'Document' means any entry of any type (e.g. Event,  Discussion or Documnet)
     /// </summary>
     public partial class MainView : Page
     {
@@ -37,7 +38,6 @@ namespace TabNavApp.Views
         private EntryGraphQuery docQuery = null;                                                //query object for document related queries
 
         
-        
         public delegate void EventHandler(object sender, EventArgs args);                       //
         public event EventHandler TagButton_Clicked = null;
         public event VirtuosoQuery.StaticHelper.EventHandler configLoaded = null;    //
@@ -48,6 +48,8 @@ namespace TabNavApp.Views
         private ContextMenu docListContextM = new ContextMenu();
         private ContextMenu deleteTagsContextM = new ContextMenu();
         private ContextMenu tagListContextM = new ContextMenu();
+
+        private const int INT_topKresults = 30;
 
         public MainView()
         {
@@ -113,16 +115,17 @@ namespace TabNavApp.Views
 
         private void ItemSourceChangedCallbackFkt(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            //foreach (Item it in tagController.Items)
-            //    if (it.Control != null && it.Background != null)
-            //        it.Control.Background = it.Background;
         }
 
         private void tagSearchBT_Click(object sender, RoutedEventArgs e)
         {
-            query.searchTag(searchTagCall, tagSearchTB.Text, 50);
-            tagController.Clear();
-           // Deployment.Current.Dispatcher.BeginInvoke(() => { MessageBox.Show("query gesendet"); });
+            if (tagSearchTB.Text.Length > 2)
+            {
+                query.searchTag(searchTagCall, tagSearchTB.Text, INT_topKresults);
+                tagController.Clear();
+            }
+            else
+                MessageBox.Show("At least 3 characters needed.");
         }
 
         /// <summary>
@@ -152,22 +155,27 @@ namespace TabNavApp.Views
             {
                 if(doc.Tags == null)
                     doc.Tags = new Dictionary<string, string>();
-                
-                doc.Tags.Add(((sender as TabNavApp.Api.Tags.TagListItem).DataContext as Tag).Uri, ((sender as TabNavApp.Api.Tags.TagListItem).DataContext as Tag).Name);
-                zw.Add(new ReturnDocument()
+                string key = ((sender as TabNavApp.Api.Tags.TagListItem).DataContext as Tag).Uri;
+                string value = ((sender as TabNavApp.Api.Tags.TagListItem).DataContext as Tag).Name;
+
+                if (!doc.Tags.Keys.Contains(key))   //not!
                 {
-                    Author = doc.Author,
-                    CreationDate = doc.CreationDate,
-                    ListType = Entry.Document,
-                    UniqueID = doc.UniqueID,
-                    Name = doc.Name,
-                    ListID = doc.ListID,
-                    server = doc.server,
-                    Tags = doc.Tags.Keys.ToList()
-                });
+                    doc.Tags.Add(key, value);
+                    zw.Add(new ReturnDocument()
+                    {
+                        Author = doc.Author,
+                        CreationDate = doc.CreationDate,
+                        ListType = doc.ListType,
+                        UniqueID = doc.UniqueID,
+                        Name = doc.Name,
+                        ListID = doc.ListID,
+                        server = doc.server,
+                        Tags = doc.Tags.Keys.ToList()
+                    }); 
+                }
             }
             docQuery.insertEntries(zw);
-           // MessageBox.Show("All sticked documents were tagged with " + ((sender as TabNavApp.Api.Tags.TagListItem).DataContext as Tag).Name);
+            MessageBox.Show("All sticked entries were tagged with " + ((sender as TabNavApp.Api.Tags.TagListItem).DataContext as Tag).Name);
         }
 
         private void docSearchTB_KeyDown(object sender, KeyEventArgs e)
@@ -178,7 +186,13 @@ namespace TabNavApp.Views
 
         private void docSearchBT_Click(object sender, RoutedEventArgs e)
         {
-            docQuery.getEntriesByName(docSearchTB.Text, docQueryCallback, null);
+            if (docSearchTB.Text.Length > 2)
+            {
+                docQuery.getEntriesByName(docSearchTB.Text, docQueryCallback, null);
+                documentController.Clear();
+            }
+            else
+                MessageBox.Show("At least 3 characters needed.");
         }
 
         public void CloseWindow()
@@ -211,7 +225,7 @@ namespace TabNavApp.Views
                         server = doc.server,
                         UniqueID = doc.UniqueID
                     });
-                    docQuery.getEntryTags(doc.UniqueID, docTagsCallback, docs.Last(), VirtuosoQuery.Silverlight.Docs.OrderDirection.ASC);
+                    docQuery.getEntryTags(doc.UniqueID, docTagsCallback, docs.Last(), VirtuosoQuery.Silverlight.Entry.OrderDirection.ASC);
                 }
                 documentController.Clear();
                 documentController.Add(docs.ToArray());
@@ -232,7 +246,7 @@ namespace TabNavApp.Views
         {
             this.tagController.Clear();
             foreach (Document doc in documentController.StickedItems)
-                docQuery.getEntryTags(doc.UniqueID, docTagsCallback, this.tagController, VirtuosoQuery.Silverlight.Docs.OrderDirection.ASC);
+                docQuery.getEntryTags(doc.UniqueID, docTagsCallback, this.tagController, VirtuosoQuery.Silverlight.Entry.OrderDirection.ASC);
             tagController.Update(true);
         }
 
@@ -267,13 +281,14 @@ namespace TabNavApp.Views
             this.tagController.ClearAll();
             if(docListContextM.DataContext.GetType() == typeof(Document))
             {
-                docQuery.getEntryTags((docListContextM.DataContext as Document).UniqueID, docTagsCallback, this.tagController, VirtuosoQuery.Silverlight.Docs.OrderDirection.ASC);
+                docQuery.getEntryTags((docListContextM.DataContext as Document).UniqueID, docTagsCallback, this.tagController, VirtuosoQuery.Silverlight.Entry.OrderDirection.ASC);
             }
             tagController.Update(true);
         }
 
         void AllDocsOfTags_Click(object sender, RoutedEventArgs e)
         {
+            documentController.ClearAll();
             if (docListContextM.DataContext != null && docListContextM.DataContext.GetType() == typeof(Document))
             {
                 docQuery.getEntriesByTags((docListContextM.DataContext as Document).Tags.Keys.ToList(), docQueryCallback, null);
@@ -282,7 +297,6 @@ namespace TabNavApp.Views
             {
                 docQuery.getEntriesByTags(new List<string>(){(tagListContextM.DataContext as Tag).Uri}, docQueryCallback, null);
             }
-            tagController.Update(true);
         }
 
         public void LoadTagListBoxContextMenu(object sender)
@@ -291,7 +305,7 @@ namespace TabNavApp.Views
             tagListContextM.DataContext = (sender as TagListItem).DataContext;
 
             MenuItem mItem = new MenuItem();
-            mItem.Header = "show all Tags of this document";
+            mItem.Header = "show all Tags of this entry";
             tagListContextM.Items.Add(mItem);
             mItem.Click += new RoutedEventHandler(AllDocsOfTags_Click);
 
@@ -304,14 +318,20 @@ namespace TabNavApp.Views
             docListContextM.DataContext = (sender as DocumentListItem).DataContext;
 
             MenuItem mItem = new MenuItem();
-            mItem.Header = "show all Tags of this document";
+            mItem.Header = "show all Tags of this entry";
             docListContextM.Items.Add(mItem);
             mItem.Click += new RoutedEventHandler(AllTagsOfDocument_Click);
 
             mItem = new MenuItem();
-            mItem.Header = "show all documents with same Tags";
+            mItem.Header = "show all entries with same Tags";
             docListContextM.Items.Add(mItem);
             mItem.Click += new RoutedEventHandler(AllDocsOfTags_Click);
+
+            mItem = new MenuItem();
+            mItem.Header = "show Tags";
+            mItem.DataContext = (sender as DocumentListItem).DataContext;
+            docListContextM.Items.Add(mItem);
+            mItem.Click += new RoutedEventHandler(loadDeleteTagsContextMenu);
 
             mItem = new MenuItem();
             mItem.Header = "delete Tags";
@@ -319,16 +339,40 @@ namespace TabNavApp.Views
             docListContextM.Items.Add(mItem);
             mItem.Click += new RoutedEventHandler(loadDeleteTagsContextMenu);
 
+            mItem = new MenuItem();
+            mItem.Header = "get tag-suggestions from FOX";
+            mItem.DataContext = (sender as DocumentListItem).DataContext;
+            docListContextM.Items.Add(mItem);
+            mItem.Click +=new RoutedEventHandler(getFoxSuggestions);
+
             docListContextM.IsOpen = true;
         }
 
-        void loadDeleteTagsContextMenu(object sender, RoutedEventArgs e)
+        void getFoxSuggestions(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("This is a placeholder for a future implementation of an automated tag-proposal-feature based on the FOX-Framework");
+
+            //uncomment if automated tag-suggestion-service is implemented
+
+            //Document doc = docListContextM.DataContext as Document;
+            //if (docListContextM.DataContext is Document)
+            //{
+            //    AsyncDocumentLoader loader = new AsyncDocumentLoader(MainPage.SiteUrl);
+            //    loader.OpenDocumentFileStream(doc.UniqueID, doc.ListID);
+            //}
+        }
+
+        void loadDeleteTagsContextMenu(object from, RoutedEventArgs e)
         {
             deleteTagsContextM.Items.Clear();
-
+            MenuItem sender = from as MenuItem;
             MenuItem mItem = new MenuItem();
-            mItem.Header = "delete one Tag:";
-            this.deleteTagsContextM.Items.Add(mItem);
+
+            if (sender.Header.ToString().Contains("delete"))
+            {
+                mItem.Header = "delete one Tag:";
+                this.deleteTagsContextM.Items.Add(mItem);
+            }
 
             if (((sender as MenuItem).DataContext as Document).Tags != null)
             {
@@ -338,7 +382,9 @@ namespace TabNavApp.Views
                     mItem.Header = val.Value;
                     mItem.DataContext = new Tuple<string, string, Document>(((sender as MenuItem).DataContext as Document).UniqueID, val.Key, (sender as MenuItem).DataContext as Document);
                     this.deleteTagsContextM.Items.Add(mItem);
-                    mItem.Click += new RoutedEventHandler(deleteOneTag);
+
+                    if (sender.Header.ToString().Contains("delete"))
+                        mItem.Click += new RoutedEventHandler(deleteOneTag);
                 } 
             }
 
@@ -365,7 +411,6 @@ namespace TabNavApp.Views
                 tagController.ClearAll();
                 tagController.Add(state.ItemList);
                 tagController.StickedItems = state.StickiedList.ToList();
-                //tagController.Stick(state.stickiedList);
                 tagController.Update(false);
             }
         }
@@ -379,7 +424,6 @@ namespace TabNavApp.Views
                 tagController.ClearAll();
                 tagController.Add(state.ItemList);
                 tagController.StickedItems = state.StickiedList.ToList();
-                //tagController.Stick(state.stickiedList);
                 tagController.Update(false);
             }
         }
@@ -393,7 +437,6 @@ namespace TabNavApp.Views
                 documentController.ClearAll();
                 documentController.Add(state.ItemList);
                 documentController.StickedItems = state.StickiedList.ToList();
-                //documentController.Stick(state.stickiedList);
                 documentController.Update(false);
             }
         }
@@ -407,7 +450,6 @@ namespace TabNavApp.Views
                 documentController.ClearAll();
                 documentController.Add(state.ItemList);
                 documentController.StickedItems = state.StickiedList.ToList();
-                //documentController.Stick(state.stickiedList);
                 documentController.Update(false);
             }
         }
@@ -426,10 +468,8 @@ namespace TabNavApp.Views
 
         private void configLoadedCallbackFkt(object sender, EventArgs e)
         {
-            //Deployment.Current.Dispatcher.BeginInvoke(() => { MessageBox.Show("config loaded"); });
             docQuery = new EntryGraphQuery();
             query = new VirtuosoSkosQuery();
-            //Deployment.Current.Dispatcher.BeginInvoke(() => { MessageBox.Show(query.initialized.ToString()); });
         }
     }
 }

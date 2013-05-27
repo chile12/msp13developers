@@ -75,12 +75,19 @@
     <Compile Include="SPVirtuosoItemEventReceiversr.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="FeatureParts\Buttons\TagButton_Event\Elements.xml" />
     <Content Include="FeatureParts\Buttons\TagButton_DocLib\Elements.xml">
       <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Layouts\SkosTagFeatures\FeatureConfig.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Include="ClassDiagram1.cd" />
     <None Include="ControlTemplates\SharePointProjectItem.spdata">
       <SharePointProjectItemId>{655c34b7-07c3-4bdb-9889-d96936644545}</SharePointProjectItemId>
+    </None>
+    <None Include="FeatureParts\Buttons\TagButton_Event\SharePointProjectItem.spdata">
+      <SharePointProjectItemId>{7fe7cf3a-5d13-4841-b9b1-03cfdff67081}</SharePointProjectItemId>
     </None>
     <None Include="FeatureParts\Buttons\TagButton_Global\SharePointProjectItem.spdata">
       <SharePointProjectItemId>{b0afc3a0-d7c4-4743-b5ce-68ba472b789f}</SharePointProjectItemId>
@@ -101,7 +108,6 @@
     <None Include="Package\Package.Template.xml">
       <DependentUpon>Package.package</DependentUpon>
     </None>
-    <Content Include="Layouts\SkosTagFeatures\FeatureConfig.xml" />
     <Content Include="Layouts\SkosTagFeatures\js\Global.js" />
     <Content Include="Layouts\SkosTagFeatures\MainPage\MainPage.aspx">
       <SubType>ASPXCodeBehind</SubType>
@@ -143,7 +149,7 @@
     <VisualStudio>
       <FlavorProperties GUID="{BB1F664B-9266-4fd6-B973-E1E44974B511}">
         <DeploymentConfigurations>
-          <DeploymentConfiguration Name="retract solution only">
+          <DeploymentConfiguration Name="retract solution">
             <DeploymentSteps>
             </DeploymentSteps>
             <RetractionSteps>Microsoft.VisualStudio.SharePoint.RecycleApplicationPool;Microsoft.VisualStudio.SharePoint.RetractSolution</RetractionSteps>

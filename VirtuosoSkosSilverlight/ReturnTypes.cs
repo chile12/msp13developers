@@ -14,7 +14,7 @@ using System.Collections;
 
 namespace VirtuosoQuery
 {
-    public enum Entry { Generic, Document, Discussion, Survey, Issue, Page }
+    public enum Entry { Generic, Document, Discussion, Survey, Issue, Page, Event }
 
     /// <summary>
     /// a dynamic member-collection for up to 10 different row-entries e.g. for a DataGrid in Silverlight

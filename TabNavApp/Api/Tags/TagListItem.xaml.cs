@@ -20,7 +20,7 @@ namespace TabNavApp.Api.Tags
     /// </summary>
     public partial class TagListItem : UserControl
     {
-        private const int INT_StringlengthForSubLabels = 70;
+        private const int INT_StringlengthForSubLabels = 60;
         private MainView MainView;
         private Item Item;
         /// <summary>

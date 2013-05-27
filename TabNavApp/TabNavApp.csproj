@@ -132,9 +132,6 @@
     <Compile Include="Views\SearchGraph.xaml.cs">
       <DependentUpon>SearchGraph.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\Welcome.xaml.cs">
-      <DependentUpon>Welcome.xaml</DependentUpon>
-    </Compile>
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -169,10 +166,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\Welcome.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="MainPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -196,6 +189,8 @@
     <Resource Include="Icons\search.png" />
     <Resource Include="Icons\up.png" />
     <Resource Include="Icons\undo.png" />
+    <Resource Include="Icons\Document.png" />
+    <Resource Include="Icons\Event.png" />
     <Content Include="System.Windows.Controls.Input.Toolkit.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)\Microsoft.Silverlight.CSharp.targets" />

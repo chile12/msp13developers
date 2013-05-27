@@ -10,7 +10,7 @@
     EnableTheming="True" Height="61px" ImageAlign="Middle" 
     ImageUrl="~/_layouts/images/NoteBoard_32x32.png" 
     onclick="ImageButton1_Click" 
-    ToolTip="extended tagging feature: tag any site or document" Width="61px" />
+    ToolTip="Extended tagging feature: tag any site or document" Width="61px" />
 
 <script type="text/javascript" src="~/_layouts/SkosTagFeatures/js/Global.js"></script>
 <script type="text/javascript">
@@ -18,5 +18,4 @@
     function OpenTabNavApp() {
         TabNavApp_PopUp("null");
     }
-        
 </script>

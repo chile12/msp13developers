@@ -35,8 +35,6 @@
                 <StackPanel x:Name="LinksStackPanel" Style="{StaticResource LinksStackPanelStyle}">
                     <HyperlinkButton Content="tagging" x:Name="Link0" NavigateUri="/MainView" Style="{StaticResource LinkStyle}" TargetName="ContentFrame" />
                     <HyperlinkButton x:Name="Link2" Style="{StaticResource LinkStyle}" NavigateUri="/SearchGraph" TargetName="ContentFrame" Content="search tags" />
-                    <HyperlinkButton x:Name="Link1" Style="{StaticResource LinkStyle}" NavigateUri="/Welcome" TargetName="ContentFrame" Content="administration"/>
-									 
                     <Rectangle x:Name="Divider1" Style="{StaticResource DividerStyle}"/>
                 </StackPanel>
             </Border>

@@ -57,7 +57,7 @@ function getInitParamString(param) {
 
 //returns the html that embeds a silverlight application at a specific path in a webpage
 function embedSilverlight(applicationPath, parentControl, id, paramName) {
-    var initParams = getInitParamString("listId") + "," + getInitParamString("MS.SP.Url") + "," + getInitParamString(paramName);
+    var initParams = getInitParamString("docType") + "," + getInitParamString("listId") + "," + getInitParamString("MS.SP.Url") + "," + getInitParamString(paramName);
     return Silverlight.createObject(
                     applicationPath,
                     parentControl,

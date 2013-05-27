@@ -10,8 +10,10 @@ namespace TagButton
 {
     class SPVirtuosoItemEventReceivers : SPItemEventReceiver
     {
-        Guid featureGuid = new Guid("b85a4771-b84c-4240-bfb9-94dc108c6a17");
-        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="properties"></param>
         public override void ItemDeleting(SPItemEventProperties properties)
         {
             if (properties.Context != null)
@@ -26,7 +28,10 @@ namespace TagButton
                 catch { return; }
             }
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="properties"></param>
         public override void ItemAdded(SPItemEventProperties properties)
         {
             if (properties.Context != null)
@@ -34,13 +39,16 @@ namespace TagButton
                 try
                 {
                     string config = SPUtility.GetGenericSetupPath(@"TEMPLATE\LAYOUTS\SkosTagFeatures\FeatureConfig.xml");
-                    VirtuosoGraphUpdate virtuosoUpdate = new VirtuosoGraphUpdate(config);
-                    string guid = properties.ListItem.UniqueId.ToString().Replace("{", "").Replace("}", "");
+                    VirtuosoGraphUpdate virtuosoUpdate = new VirtuosoGraphUpdate(config);                           //query-object - needs url of config-file
                     
-                        SPListItem item = properties.ListItem;
-                        virtuosoUpdate.insertEntry(guid, properties.ListId.ToString().Replace("{", "").Replace("}", ""), item.Name, DateTime.Now,
-                            Entry.Document, properties.UserLoginName.Replace("\\", ""), properties.Web.Url + properties.Web.ServerRelativeUrl);
+                    SPListItem item = properties.ListItem;                                                          //retrive item
+                    string guid = properties.ListItem.UniqueId.ToString().Replace("{", "").Replace("}", "");        //guid of list item
+                    string listId = properties.ListId.ToString().Replace("{", "").Replace("}", "");                 //guid of list
+                    Entry entryType = (Entry)Enum.Parse(typeof(Entry), item.ContentType.ResourceFolder.Name);       //retrieving the non-localized SPContentType.Name from ContentType.ResourceFolder.Name -> may need to be revisited
+                    string userName = properties.UserLoginName.Replace("\\", "");                                   //username (aka author)
+                    string server = properties.Web.Url + properties.Web.ServerRelativeUrl;                          //construct server url
                     
+                    virtuosoUpdate.insertEntry(guid, listId, item.Name, DateTime.Now, entryType, userName, server); //send query
                 }
                 catch (Exception)
                 {
@@ -48,21 +56,5 @@ namespace TagButton
                 }
             }
         }
-
-        //public override void ItemUpdating(SPItemEventProperties properties)
-        //{
-        //    if (properties.Context != null)
-        //    {
-        //        try
-        //        {
-        //            string featureRoot = properties.Web.Features[featureGuid].Definition.RootDirectory;
-        //            VirtuosoGraphUpdate virtuosoUpdate = new VirtuosoGraphUpdate(featureRoot);
-        //            SPListItem item = properties.ListItem;
-        //            virtuosoUpdate.updateListIdByGuid(properties.ListItem.UniqueId.ToString().Replace("{", "").Replace("}", ""), 
-        //                properties.AfterProperties["ListId"].ToString().Replace("{", "").Replace("}", ""));
-        //        }
-        //        catch { return; }
-        //    }
-        //}
     }
 }

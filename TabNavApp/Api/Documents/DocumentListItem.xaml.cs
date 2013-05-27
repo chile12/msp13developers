@@ -12,8 +12,9 @@ using System.Windows.Shapes;
 using TabNavApp.Api.Common;
 using TabNavApp.Views;
 using System.Text;
-using VirtuosoQuery.Silverlight.Docs;
+using VirtuosoQuery.Silverlight.Entry;
 using System.Threading;
+using System.Windows.Media.Imaging;
 
 namespace TabNavApp.Api.Documents
 {
@@ -23,7 +24,7 @@ namespace TabNavApp.Api.Documents
     public partial class DocumentListItem : UserControl
     {
         private MainView MainView;      //the MainView
-        private Item Item;              //the DataBoundItem as DataSource for this
+        private Document Item;              //the DataBoundItem as DataSource for this
         /// <summary>
         /// ...
         /// </summary>
@@ -56,8 +57,10 @@ namespace TabNavApp.Api.Documents
         private void Initialize(object sender, DependencyPropertyChangedEventArgs e)
         {
             getMainViewFromSender(sender);
-            Item = this.DataContext as Item;            //DataContext is a Document
+            Item = this.DataContext as Document;            //DataContext is a Document
             Item.Control = this;
+
+            Icon.Source = new BitmapImage(new Uri("../../Icons/" + Item.ListType.ToString() + ".png", UriKind.Relative));
         }
         /// <summary>
         /// since the parent of this control is not been set, the corresponding MainView is somewhere up the visual tree

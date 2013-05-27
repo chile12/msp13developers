@@ -73,7 +73,6 @@ namespace TabNavApp
 
             this.Loaded += new RoutedEventHandler(Page_Loaded);                             //events are activated
             this.SizeChanged += new SizeChangedEventHandler(SearchGraph_SizeChanged);
-            this.graphBox.SizeChanged += new SizeChangedEventHandler(graphBox_SizeChanged);
             //this.MouseLeftButtonDown += new MouseButtonEventHandler(SearchGraph_MouseLeftButtonDown);
 
             query.topGraphConcepts(topConceptCallback);
@@ -82,12 +81,6 @@ namespace TabNavApp
             this.UpdateLayout();
             this.memberOfDG.Focus();
             
-        }
-
-        void graphBox_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            if (graphControl != null)
-                graphControl.ChangeSize(e.NewSize);
         }
         /// <summary>
         /// will automatically change the outline of a graph if the parent-container-size changes
@@ -98,6 +91,13 @@ namespace TabNavApp
         {
             if (graphControl != null)
                 graphControl.ChangeSize(e.NewSize);
+
+            if (graphBox != null)
+            {
+                graphBox.Width = this.RenderSize.Width - graphBox.Margin.Left - graphBox.Margin.Right;
+                graphBox.Height = this.RenderSize.Height - graphBox.Margin.Bottom - graphBox.Margin.Top;
+            }
+
         }
         
         /// <summary>
@@ -283,6 +283,7 @@ namespace TabNavApp
             query.siblings(graphCallback, conceptUri, OrderDirection.NONE, 2);
             query.relatedTo(graphCallback, conceptUri, OrderDirection.NONE, 3);
             query.propertiesOf(propertiesCallback, conceptUri, OrderDirection.NONE, null);     //get addition properties to fill discription and alternative tags
+
         } 
 
 

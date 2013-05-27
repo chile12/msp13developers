@@ -1,0 +1,71 @@
+#graph-definition of the entry/tag-graph
+#upload to virtuoso under a new graphname
+    
+    @prefix :     <http://sharepoint.my/SPResourceTags/> .
+    @prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+    @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+	@prefix skos: <http://www.w3.org/2004/02/skos/core#>.
+	@prefix xmls: <http://www.w3.org/2001/XMLSchema#>.
+	@prefix unesco: <http://skos.um.es/unescothes/>.
+	@prefix ctag:	<http://commontag.org/ns#>.
+    
+	:spItem		a 					rdfs:class.
+	
+#all SP list-typs(page, Event are custom), compare: http://msdn.microsoft.com/en-us/library/microsoft.sharepoint.client.basetype%28v=office.14%29.aspx	
+	:ListType	a					rdfs:Class.
+	
+	:Generic	a					:ListType.
+	:spItem 	a			    	:ListType.
+	:Discussion a					:ListType.
+	:Survey		a					:ListType.
+	:Issue		a					:ListType.
+	:Page		a					:ListType.
+	:Event		a					:ListType.
+	
+	:Tag		rdfs:subClassOf		ctag:Tag.
+	
+	:tagged		rdfs:subPropertyOf	ctag:tagged;
+				rdfs:domain			:spItem;
+				rdfs:range			:Tag.
+				
+	:means		rdfs:subPropertyOf	ctag:means;
+				rdfs:range			skos:Concept;
+				rdfs:domain			:Tag.
+				
+	:name		a					rdf:Property;
+				rdfs:range			xmls:string;
+				rdfs:domain			:spItem.
+				
+#the document creator				
+	:author		a					rdf:Propery;
+				rdfs:range			xmls:string;
+				rdfs:domain			:spItem.
+
+#Sharepoint-Server				
+	:spServer	a					rdf:Property;
+				rdfs:range			xmls:string;
+				rdfs:domain			:spItem.
+	
+#unique Id if the document	
+	:spGuid		a					rdf:Property;
+				rdfs:range			xmls:string;
+				rdfs:domain			:spItem.
+				
+#ID and ListID for quicker SP-Navigation
+	:spListID	a 					rdf:Property;
+				rdfs:range			xmls:string;
+				rdfs:domain			:spItem.
+				
+#ListType of the list which holds this item
+	:spListType	a					rdf:Property;
+				rdfs:range			:ListType;
+				rdfs:domain			:spItem.
+				
+#time the Doc was created				
+	:created	a 					rdf:Property;
+				rdfs:range 			xmls:datetime;
+				rdfs:domain			:spItem.
+			
+	
+				
+				

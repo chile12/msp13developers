@@ -23,19 +23,18 @@
         <Grid Grid.Column="1" Width="Auto" Grid.RowSpan="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
-                <RowDefinition Height="343*" />
-                <RowDefinition Height="0*" />
+                <RowDefinition Height="247*" />
             </Grid.RowDefinitions>
-            <sdk:DataGrid AutoGenerateColumns="False" Margin="6,0,0,6" Name="memberOfDG" HorizontalAlignment="Left" Width="203" Height="110" VerticalAlignment="Bottom" KeyDown="tabControl_KeyDown" KeyUp="tabControl_KeyUp" Grid.Row="1" />
-            <Viewbox Margin="215,63,0,21" Name="graphBox" Grid.Row="1" Stretch="Fill" />
+            <sdk:DataGrid AutoGenerateColumns="False" Margin="6,0,0,6" Name="memberOfDG" HorizontalAlignment="Left" Width="276" Height="110" VerticalAlignment="Bottom" KeyDown="tabControl_KeyDown" KeyUp="tabControl_KeyUp" Grid.Row="1" />
+            <Viewbox Margin="215,63,6,21" Name="graphBox" Grid.Row="1" Stretch="Fill" Height="Auto" />
             <TextBlock HorizontalAlignment="Left" Margin="6,63,0,151" Name="discriptionTB" Text="" VerticalAlignment="Stretch" Width="203" TextWrapping="Wrap" FontSize="12" Grid.Row="1" />
             <TextBlock Height="37" HorizontalAlignment="Left" Margin="6,31,0,0" Name="altLabelTB" Text="navigate through all tags" VerticalAlignment="Top" Width="469" TextWrapping="Wrap" FontSize="12" Grid.Row="1" />
             <TextBlock Height="34" HorizontalAlignment="Left" Margin="6,0,0,0" Name="prefLabelTB" Text="TagGraphBrowser" VerticalAlignment="Top" Width="469" FontSize="20" FontWeight="SemiBold" FontStretch="Normal" Grid.Row="1" />
             <TextBlock Height="28" HorizontalAlignment="Left" Margin="6,0,0,117" Name="textBlock1" Text="is Member of these collections:" VerticalAlignment="Bottom" Width="203" FontSize="12" Grid.Row="1" />
-            <ComboBox Height="23" HorizontalAlignment="Right" Margin="0,31,0,0" Name="topConceptCB" VerticalAlignment="Top" Width="303" SelectionChanged="topConceptCB_SelectionChanged" Grid.Row="1" />
+            <ComboBox Height="23" HorizontalAlignment="Right" Margin="0,31,0,0" Name="topConceptCB" VerticalAlignment="Top" Width="303" SelectionChanged="topConceptCB_SelectionChanged" Grid.Row="1" KeyDown="tabControl_KeyDown" KeyUp="tabControl_KeyUp" />
             <TextBlock FontSize="12" Height="25" HorizontalAlignment="Right" Margin="0,9,0,0" Name="textBlock2" Text="select a top concept" TextWrapping="Wrap" VerticalAlignment="Top" Width="303" Grid.Row="1" />
-            <TextBlock FontSize="12" Height="21" Margin="215,0,6,0" Name="textBlock3" Text="navigate by clicking on nodes or select a tag by CTRL + click a node" TextWrapping="Wrap" VerticalAlignment="Bottom" Grid.Row="1" />
+            <TextBlock FontSize="12" Height="21" Margin="288,0,6,0" Name="textBlock3" Text="navigate by clicking on nodes or select a tag by CTRL + click a node" TextWrapping="Wrap" VerticalAlignment="Bottom" Grid.Row="1" />
         </Grid>
-      </Grid>
+    </Grid>
 
 </navigation:Page>

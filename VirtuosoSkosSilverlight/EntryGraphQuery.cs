@@ -29,6 +29,7 @@ namespace VirtuosoQuery.Silverlight.Entry
     public class EntryGraphQuery : TripleStoreQuery, IEntryGraphQuery
     {
         private AutoResetEvent stopWaitHandle = new AutoResetEvent(false);          //handles thread stepping
+        private AutoResetEvent entryInputWaitHandle = new AutoResetEvent(false);          //handles thread stepping
         private SparqlResultsCallback callbackMaxDoc;                               //some delegates
         private SparqlResultsCallback callbackMaxTag;
         private SparqlResultsCallback callbackUpdatedDoc;
@@ -184,10 +185,14 @@ namespace VirtuosoQuery.Silverlight.Entry
         /// <param name="entries">list of documents(enties)</param>
         public void insertEntries(List<ReturnDocument> entries)
         {
-            foreach (ReturnDocument entry in entries)
+            new Thread(() =>
             {
-                getEntryUriByGuid(entry.UniqueID, insertEntryOrTagCallback, entry);
-            }
+                foreach (ReturnDocument entry in entries)
+                {
+                    getEntryUriByGuid(entry.UniqueID, insertEntryOrTagCallback, entry);
+                    entryInputWaitHandle.WaitOne();
+                }
+            }).Start();
         }
         /// <summary>
         /// update query: insert a new entry in the document(entry)-graph
@@ -468,16 +473,17 @@ namespace VirtuosoQuery.Silverlight.Entry
         /// <summary>
         /// callback methode: checks if an entry already exists, if not: insert new entry with tags, else insert tags only
         /// </summary>
-        /// <param name="set"></param>
-        /// <param name="state"></param>
+        /// <param name="set">not used</param>
+        /// <param name="state">not used</param>
         void insertEntryOrTagCallbackFkt(SparqlResultSet set, object state)
         {
             ReturnDocument item = (state as ReturnDocument);
             Deployment.Current.Dispatcher.BeginInvoke(() =>
             {
-                if (set.Results.Count == 0)     //insert new entry with tags
+                if (set.Results.Count == 0)     
                 {
-                    insertEntry(item.UniqueID, item.ListID, item.Name, DateTime.Parse(item.CreationDate), item.ListType, item.Tags, item.Author, item.server);
+                    //insert new entry with tags (open in new thread or UI-thread gets stuck by more than one new entry
+                    Deployment.Current.Dispatcher.BeginInvoke(() => { insertEntry(item.UniqueID, item.ListID, item.Name, DateTime.Parse(item.CreationDate), item.ListType, item.Tags, item.Author, item.server); });
                 }
                 else if (set.Results.Count == 1)    //
                 {
@@ -492,6 +498,8 @@ namespace VirtuosoQuery.Silverlight.Entry
                 }
                 else
                     throw new Exception("The document-graph used is faulty. A duplicate document-guid was detected: \n" + item.UniqueID + "\nPlease contact an administrator about this issue.");
+
+                entryInputWaitHandle.Set();
             });
         }
     }

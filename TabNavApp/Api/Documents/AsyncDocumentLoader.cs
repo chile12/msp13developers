@@ -110,6 +110,47 @@ namespace TabNavApp.Api.Documents
             this.listId = listId;
             ThreadPool.QueueUserWorkItem(LoadDocumentsThread);
         }
+                /// <summary>
+        /// initiates the open-filestream-routine, which passes the sourcefile 
+        /// to a (e.g.) FOX-client for automated tag retrival
+        /// </summary>
+        /// <param name="documentId"></param>
+        /// <param name="listId"></param>
+        public void OpenDocumentFileStream(string documentId, string listId)
+        {
+            this.documentIds = new string[] { documentId };
+            this.listId = listId;
+            ThreadPool.QueueUserWorkItem(OpenFileStream);
+        }
+
+                /// <summary>
+        /// finds given file and tries to open sourcefile
+        /// openFileSucceeded(...) should send opend stream to Fox-service
+        /// </summary>
+        /// <param name="state">-</param>
+        private void OpenFileStream(object state)
+        {
+            try
+            {
+                using (ClientContext context = new ClientContext(siteUrl))
+                {
+                    List currentList = context.Web.Lists.GetById(new Guid(listId));
+                    context.Load(currentList);
+                    context.ExecuteQuery();
+                    ListItemCollection col = currentList.GetItems(createDocumentCamlQuery());
+                    context.Load(col);
+                    context.ExecuteQuery();
+
+                    File.OpenBinaryDirect(context, col[0].File.ServerRelativeUrl, 
+                        new EventHandler<OpenBinarySucceededEventArgs>(openFileSucceeded), 
+                        new EventHandler<OpenBinaryFailedEventArgs>(openFileFailed));
+                }
+            }
+            catch (Exception)
+            {
+                //error loading items
+            }
+        }
 
         private void FindDocumentThread(object state)
         {
@@ -195,7 +236,7 @@ namespace TabNavApp.Api.Documents
                     context.ExecuteQuery();
                     list = currentList;
       
-                    if (currentList.BaseType == BaseType.DocumentLibrary)
+                    if (true)
                     {
                         ListItemCollection col = currentList.GetItems(createDocumentCamlQuery());
                         context.Load(col);
@@ -208,21 +249,48 @@ namespace TabNavApp.Api.Documents
                             int i = 0;
                             foreach (ListItem item in col)
                             {
-                                File file = item.File;
-                                context.Load(file, f => f.Name, f => f.Author, f => f.TimeCreated);
-                                User author = file.Author;
-                                context.Load(author, a => a.LoginName);
-                                context.ExecuteQuery();
-                                
-                                docs[i] = new Document()
-                                {
-                                    Name = file.Name,
-                                    CreationDate = file.TimeCreated.ToString(),
-                                    Author = file.Author.LoginName,
-                                    UniqueID = item["UniqueId"].ToString(),
-                                    ListID = listId
-                                };
-                                i++;
+                             
+                                   
+                                    //User author = file.Author;
+                                    //context.Load(author, a => a.LoginName);
+                                    //context.ExecuteQuery();
+                                    string Name = "Untitled";
+                                    bool hasTitle = true;
+                                    try
+                                    {
+                                        string check = item["Title"].ToString();
+                                    }
+                                    catch (Exception)
+                                    {
+                                        hasTitle = false;
+                                    }
+                                    if (hasTitle)
+                                    {
+                                        Name = item["Title"].ToString();
+                                    }
+                                    else if (item.File != null)
+                                    {
+                                        File file = item.File;
+                                        context.Load(file, f => f.Name);
+                                        context.ExecuteQuery();
+                                        Name = file.Name;
+                                    }
+
+                                        
+                                    string CreationDate = item["Created"].ToString();
+                                    FieldUserValue Author = item["Author"] as FieldUserValue;
+                                    string UniqueID = item["UniqueId"].ToString();
+                                    string ListID = listId;
+
+
+                                    docs[i] = new Document();
+                                    docs[i].Name = Name;
+                                    docs[i].CreationDate = CreationDate;
+                                    docs[i].Author = Author.LookupValue;
+                                    docs[i].UniqueID = UniqueID;
+                                    docs[i].ListID = ListID;
+                                    i++;
+                             
                             }
                         }
                     }
@@ -238,6 +306,7 @@ namespace TabNavApp.Api.Documents
             });
         }
 
+
         private CamlQuery createDocumentCamlQuery()
         {
             CamlQuery qry = new CamlQuery();
@@ -248,6 +317,27 @@ namespace TabNavApp.Api.Documents
             sb.Append("</Values></In></Where></Query></View>");
             qry.ViewXml = sb.ToString();
             return qry;
+        }
+    
+
+        /// <summary>
+        /// successsfully opend the file-stream of sourcefile,
+        /// add any logic for calling the FOX-service here!
+        /// </summary>
+        /// <param name="state"></param>
+        /// <param name="e"></param>
+        private void openFileSucceeded(object state, OpenBinarySucceededEventArgs e)
+        {
+            //TODO  place the FOX-service call here
+        }
+        /// <summary>
+        /// open sourcefile failed
+        /// </summary>
+        /// <param name="state"></param>
+        /// <param name="e"></param>
+        private void openFileFailed(object state, OpenBinaryFailedEventArgs e)
+        {
+            //TODO  no action just yet
         }
     }
 }

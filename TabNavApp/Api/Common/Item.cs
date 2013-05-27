@@ -8,6 +8,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
+using Microsoft.SharePoint.Client;
 
 namespace TabNavApp.Api.Common
 {
@@ -18,5 +19,6 @@ namespace TabNavApp.Api.Common
     {
         public UserControl Control { get; set; }        //the corresponding ListItem this Item is DataBoundObject of
         public Brush Background { get; set; }           //the backgroundcolor of the corresponding ListItem
+        public File SourceFile { get; set; }            //provides a file-handle for the source file (if needed)
     }
 }

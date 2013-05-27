@@ -251,6 +251,9 @@
                     <Setter Property="Padding" Value="0"/>
                 </Style>
             </ListBox.ItemContainerStyle>
+            <ToolTipService.ToolTip>
+                <ToolTip Content="doublie-click to toggle an item"></ToolTip>
+            </ToolTipService.ToolTip>
         </ListBox>
         <ListBox HorizontalAlignment="Left" Margin="7,38,0,12" x:Name="TagListBox" Width="515" Style="{StaticResource ListBoxStyle1}">
             <ListBox.ItemTemplate>
@@ -264,24 +267,55 @@
                     <Setter Property="Padding" Value="0"/>
                 </Style>
             </ListBox.ItemContainerStyle>
+            <ToolTipService.ToolTip>
+                <ToolTip Content="doublie-click to toggle an item"></ToolTip>
+            </ToolTipService.ToolTip>
         </ListBox>
         <TextBox Height="28" HorizontalAlignment="Left" Margin="86,6,0,0" x:Name="docSearchTB" VerticalAlignment="Top" Width="327" KeyDown="docSearchTB_KeyDown" Grid.Column="1" />
         <TextBox Height="28" HorizontalAlignment="Left" Margin="76,6,0,0" x:Name="tagSearchTB" VerticalAlignment="Top" Width="326" KeyDown="tagSearchTB_KeyDown" />
-        <Button Content="DocSearch" Height="28" HorizontalAlignment="Left" Margin="418,6,0,0" x:Name="docSearchBT" VerticalAlignment="Top" Width="114" Click="docSearchBT_Click" Grid.Column="1" />
-        <Button Content="TagSearch" Height="28" HorizontalAlignment="Left" Margin="408,6,0,0" x:Name="tagSearchBT" VerticalAlignment="Top" Width="114" Click="tagSearchBT_Click" />
-        <Button Content="&gt;" Grid.ColumnSpan="2" Height="88" HorizontalAlignment="Left" Margin="528,153,0,0" Name="searchDocsByStickyTagsBT" VerticalAlignment="Top" Width="24" Click="searchDocsByStickyTagsBT_Click" />
-        <Button Content="&lt;" Height="88" HorizontalAlignment="Left" Margin="528,316,0,0" Name="getTagsOfStickyDocsBT" VerticalAlignment="Top" Width="24" Grid.ColumnSpan="2" Click="getTagsOfStickyDocsBT_Click" />
+        <Button Content="EntrySearch" Height="28" HorizontalAlignment="Left" Margin="418,6,0,0" x:Name="docSearchBT" VerticalAlignment="Top" Width="114" Click="docSearchBT_Click" Grid.Column="1">
+            <ToolTipService.ToolTip>
+                <ToolTip Content="search for eny entry by title"></ToolTip>
+            </ToolTipService.ToolTip>
+        </Button>    
+            <Button Content="TagSearch" Height="28" HorizontalAlignment="Left" Margin="408,6,0,0" x:Name="tagSearchBT" VerticalAlignment="Top" Width="114" Click="tagSearchBT_Click">
+            <ToolTipService.ToolTip>
+                <ToolTip Content="search for tags related to one ore more of the entered words"></ToolTip>
+            </ToolTipService.ToolTip>
+        </Button>
+        <Button Content="&gt;" Grid.ColumnSpan="2" Height="88" HorizontalAlignment="Left" Margin="528,153,0,0" Name="searchDocsByStickyTagsBT" VerticalAlignment="Top" Width="24" Click="searchDocsByStickyTagsBT_Click" >
+            <ToolTipService.ToolTip>
+                <ToolTip Content="get all entries with one or more of the toggled tags"></ToolTip>
+            </ToolTipService.ToolTip>
+        </Button>
+        <Button Content="&lt;" Height="88" HorizontalAlignment="Left" Margin="528,316,0,0" Name="getTagsOfStickyDocsBT" VerticalAlignment="Top" Width="24" Grid.ColumnSpan="2" Click="getTagsOfStickyDocsBT_Click" >
+            <ToolTipService.ToolTip>
+                <ToolTip Content="get all tags of all toggled entries"></ToolTip>
+            </ToolTipService.ToolTip>
+        </Button>
         <Button Height="28" HorizontalAlignment="Left" Margin="6,6,0,0" Name="lastTagViewBT" VerticalAlignment="Top" Width="28" Click="lastTagViewBT_Click" >
             <Image Source="/TabNavApp;component/Icons/back.png"></Image>
+            <ToolTipService.ToolTip>
+                <ToolTip Content="restore last view"></ToolTip>
+            </ToolTipService.ToolTip>
         </Button>
         <Button Height="28" HorizontalAlignment="Left" Margin="41,6,0,0" Name="nextTagViewBT" VerticalAlignment="Top" Width="28" Click="nextTagViewBT_Click" >
             <Image Source="/TabNavApp;component/Icons/forward.png"></Image>
+            <ToolTipService.ToolTip>
+                <ToolTip Content="recreate next view"></ToolTip>
+            </ToolTipService.ToolTip>
         </Button>
         <Button Height="28" Margin="17,6,495,0" Name="lastDocViewBT" VerticalAlignment="Top" Grid.Column="1" Click="lastDocViewBT_Click" >
             <Image Source="/TabNavApp;component/Icons/back.png"></Image>
+            <ToolTipService.ToolTip>
+                <ToolTip Content="restore last view"></ToolTip>
+            </ToolTipService.ToolTip>
         </Button>
         <Button Height="28" HorizontalAlignment="Left" Margin="52,6,0,0" Name="nextDocViewBT" VerticalAlignment="Top" Width="28" Grid.Column="1" Click="nextDocViewBT_Click" >
             <Image Source="/TabNavApp;component/Icons/forward.png"></Image>
+            <ToolTipService.ToolTip>
+                <ToolTip Content="recreate next view"></ToolTip>
+            </ToolTipService.ToolTip>
         </Button>
     </Grid>
 </navigation:Page>
